@@ -15,32 +15,56 @@ GitHub(app) → Jenkins → Harbor / ECR → [이 저장소: 이미지 Tag 갱�
 ## 운영 규칙
 
 - 브랜치는 `main` 하나만 사용합니다. 개발용/운영용 환경은 브랜치가 아니라 **폴더**로 구분합니다.
-- 이미지 Tag는 **Jenkins가 자동으로 수정하고 Commit**합니다. 사람이 직접 수정하지 않습니다.
-- 이미지 Tag는 Git Commit SHA 기반입니다. `latest`는 사용하지 않습니다.
+- 개발 환경(`onprem-dev`)의 이미지 Tag는 **Jenkins가 자동으로 수정하고 Commit**합니다. 사람이 직접 수정하지 않습니다.
+- 운영 환경(`*-main`)의 이미지 Tag는 **승급 PR로만** 수정합니다.
+- 이미지 Tag는 Git Commit SHA 앞 7자리입니다. `latest`는 사용하지 않습니다.
 - 비밀번호, 토큰, 인증서 같은 민감 정보는 이 저장소에 올리지 않습니다.
 
-## 디렉터리 구조 (제안, 확정 시 변경 예정)
+## 디렉터리 구조
 
-> 아직 확정되지 않은 초안입니다. Kubernetes 담당의 Helm/Kustomize 구조와 namespace 이름이 정해지면 그에 맞춰 조정합니다. 실제 폴더는 확정 후 생성합니다. (WBS: GitOps Repository 구성)
+우리 서비스는 Helm chart를 Kustomize overlay로 감싸는 방식으로 관리합니다. 모든 환경에 공통인 내용은 `base/`에, 환경마다 다른 값(namespace, 이미지 주소·Tag 등)은 `overlays/<환경>/`에 둡니다.
 
 ```
 gitops/
-└── apps/
-    └── frontend/
-        ├── base/                 # 공통 Kubernetes 배포 설정
-        └── overlays/             # 환경별 설정 (이름과 단위는 협의 후 확정)
-            ├── onprem-dev/
-            ├── onprem-main/
-            ├── aws-dev/
-            └── aws-main/
+├── apps/                              # 우리 서비스 (Kustomize)
+│   ├── web/
+│   │   ├── base/
+│   │   │   └── kustomization.yaml     # 모든 환경 공통 배포 내용 (Helm chart 연결 예정)
+│   │   └── overlays/                  # 환경별로 다른 값만
+│   │       ├── onprem-dev/
+│   │       │   └── kustomization.yaml # ecommerce-dev, Harbor 이미지, Jenkins가 태그 자동 갱신
+│   │       ├── onprem-main/
+│   │       │   └── kustomization.yaml # ecommerce-main, Harbor 이미지, 승급 PR로 갱신
+│   │       └── aws-main/
+│   │           └── kustomization.yaml # ecommerce-main, ECR 이미지, 승급 PR로 갱신
+│   ├── auth/                          # web과 같은 구조
+│   ├── product/                       # web과 같은 구조
+│   ├── order/                         # web과 같은 구조
+│   └── promotion/                     # web과 같은 구조
+├── platform/                          # 외부 도구 Helm values (Argo Rollouts, KEDA, 모니터링) - 예정
+├── argocd/                            # Argo CD Application / ApplicationSet - 예정
+└── README.md
 ```
 
-- `develop` 머지 시 개발용 환경, `main` 머지 시 운영용 환경에 배포하는 것을 전제로 합니다.
-- 환경 이름과 namespace는 Kubernetes 담당과 협의 중입니다.
+## 환경
+
+| 환경 (overlay) | 클러스터 | namespace | 이미지 레지스트리 | Tag 갱신 |
+| --- | --- | --- | --- | --- |
+| `onprem-dev` | osi7-onprem | `ecommerce-dev` | Harbor | Jenkins 자동 |
+| `onprem-main` | osi7-onprem | `ecommerce-main` | Harbor | 승급 PR |
+| `aws-main` | osi7-aws | `ecommerce-main` | ECR | 승급 PR |
+
+## 배포 흐름
+
+1. app 레포 `main`에 머지되면 Jenkins가 이미지를 빌드해 Harbor에 push하고,
+   `apps/<서비스>/overlays/onprem-dev/kustomization.yaml`의 `newTag`를 새 태그로 바꿔 커밋합니다.
+2. Argo CD가 변경을 감지해 `ecommerce-dev`에 배포합니다.
+3. dev에서 확인한 뒤, 같은 태그를 `onprem-main`, `aws-main`으로 옮기는 PR을 올립니다.
+   PR 머지가 운영 배포 승인입니다. 이미지는 다시 빌드하지 않습니다.
 
 ## 담당
 
-| 구분                                                    | 담당            |
-| ------------------------------------------------------- | --------------- |
-| CI/CD & GitOps (Jenkins, 이미지 Tag 갱신, Argo CD 연동) | CI/CD 담당      |
-| Kubernetes 매니페스트 구조 (Helm / Kustomize)           | Kubernetes 담당 |
+| 구분 | 담당 |
+| --- | --- |
+| CI/CD & GitOps (Jenkins, 이미지 Tag 갱신, Argo CD 연동) | CI/CD 담당 |
+| Kubernetes 매니페스트 구조 (Helm / Kustomize) | Kubernetes 담당 |
