@@ -6,4 +6,4 @@ resources:
 images:
   - name: ecommerce/web
     newName: harbor.osi7.shop/ecommerce/web
-    newTag: e21dd85
+    newTag: test000
