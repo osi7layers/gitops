@@ -1,0 +1,14 @@
+# onprem-main : TODO(3번 도메인 확정 후) 실제 도메인으로 교체
+#  예) 아래 주석을 풀고 값만 바꾸면 경로의 도메인이 바뀐다.
+#      (HTTPRoute 4개: frontend · api · product-service · keycloak — api 와 product-service 는 같은 API 도메인)
+#  ★ 도메인을 바꾸면 frontend 이미지(API 주소)·Keycloak 허용 주소·auth-service SSO 주소도 같이 바뀌어야 함
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+# patches:
+#   - target: { kind: HTTPRoute, name: frontend }
+#     patch: |-
+#       - op: replace
+#         path: /spec/hostnames/0
+#         value: shop.<실제도메인>

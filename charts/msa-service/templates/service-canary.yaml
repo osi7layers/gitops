@@ -1,0 +1,29 @@
+{{- /*
+service-canary.yaml : 카나리용 Service 2개 (rollout.enabled=true 일 때만)
+ - <이름>-stable : 기존 버전 Pod 만 가리킴
+ - <이름>-canary : 새 버전 Pod 만 가리킴
+ - selector 는 같게 두고, Argo Rollouts 가 배포 중에 rollouts-pod-template-hash 를 붙여서 나눈다.
+ - HTTPRoute 는 이 두 Service 로 요청을 나눠 보낸다 (weight).
+ - 기존 <이름> Service 는 그대로 둔다 → 서비스끼리 내부 호출(product-service:8086)은 변경 없음
+*/ -}}
+{{- if .Values.rollout.enabled }}
+{{- range $role := list "stable" "canary" }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "msa-service.fullname" $ }}-{{ $role }}
+  labels:
+    {{- include "msa-service.labels" $ | nindent 4 }}
+    rollout-role: {{ $role }}
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "msa-service.selectorLabels" $ | nindent 4 }}
+  ports:
+    - name: http
+      port: {{ $.Values.service.port | default $.Values.containerPort }}
+      targetPort: http
+      protocol: TCP
+{{- end }}
+{{- end }}

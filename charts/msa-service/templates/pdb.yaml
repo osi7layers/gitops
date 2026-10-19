@@ -1,0 +1,17 @@
+{{- /*
+pdb.yaml : 노드 점검(drain) 때 최소 Pod 수 보장
+ - 최소 Pod 수가 2 이상일 때만 만든다. (1개인데 만들면 drain 이 영원히 막힘)
+*/ -}}
+{{- if and .Values.pdb.enabled (gt (int (include "msa-service.minPods" .)) 1) }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "msa-service.fullname" . }}
+  labels:
+    {{- include "msa-service.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.pdb.minAvailable }}
+  selector:
+    matchLabels:
+      {{- include "msa-service.selectorLabels" . | nindent 6 }}
+{{- end }}

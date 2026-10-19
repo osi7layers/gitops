@@ -1,9 +1,37 @@
+# auth / onprem-dev : 온프레미스 클러스터 (Harbor 에서 Pull)
+#  이미지 태그는 5번 Jenkins 가 아래 명령으로 바꾼다:
+#    kustomize edit set image ecommerce/auth=<레지스트리>/<이미지>:<태그>
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: ecommerce-dev
+namespace: ecommerce-dev   # (v7.3.12) 팀 gitops 와 같게
 resources:
   - ../../base
 images:
   - name: ecommerce/auth
-    newName: harbor.osi7.shop/ecommerce/auth
-    newTag: 018ab62
+    newName: harbor.osi7.shop/ecommerce/auth   # 팀 gitops 값
+    newTag: 018ab62   # Jenkins 가 관리 (dev 자동 · 운영은 승급 PR) — 사람이 고치지 않음
+
+# 개발용 호스트명은 운영용과 분리한다. 실제 도메인 확정 후 앱/Keycloak 설정과 함께 변경.
+patches:
+  - target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: auth-service
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: auth-service
+      spec:
+        template:
+          spec:
+            containers:
+              - name: app
+                env:
+                  - name: SSO_BACKEND_CALLBACK_URL
+                    value: "http://api.dev.ecommerce.local/api/v1/auth/callback"
+                  - name: SSO_DEFAULT_FRONTEND_REDIRECT
+                    value: "http://dev.ecommerce.local/auth/callback"
+                  - name: SSO_ALLOWED_REDIRECT_URIS
+                    value: "http://dev.ecommerce.local/auth/callback"

@@ -1,0 +1,19 @@
+# APISIX Ingress Controller Gateway API extension: route-level OpenID Connect.
+# KEYCLOAK_CLIENT_SECRET is injected into APISIX from a Kubernetes Secret by addons.sh.
+apiVersion: apisix.apache.org/v1alpha1
+kind: PluginConfig
+metadata:
+  name: ecommerce-oidc
+spec:
+  plugins:
+    - name: openid-connect
+      config:
+        _meta:
+          disable: false
+        client_id: ecommerce-client
+        client_secret: "$env://KEYCLOAK_CLIENT_SECRET"
+        discovery: http://keycloak.ecommerce-main.svc.cluster.local:8080/realms/ecommerce/.well-known/openid-configuration
+        realm: ecommerce
+        bearer_only: true
+        use_jwks: true
+        token_signing_alg_values_expected: RS256

@@ -1,0 +1,14 @@
+# aws-main : AWS 클러스터 (EKS)
+#  ★ 261008: RDS 없음. DB 는 온프렘에 계속 유지 → AWS 앱은 Site-to-Site VPN 으로 온프렘 DB VIP 에 접속한다.
+#  ★ 샘플 앱은 서비스당 DB 주소가 1개라 읽기/쓰기 분리 불가 (VIP 하나만 사용)
+#  TODO(8번·3번): 온프렘 DB VIP 의 VPN 경유 주소, AWS 쪽에서 쓸 Redis 주소
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+configMapGenerator:
+  - name: ecommerce-config
+    behavior: merge
+    literals:
+      - DB_HOST=db-vip.onprem.internal     # TODO(8번·3번): 온프렘 MySQL VIP 의 VPN 경유 주소로 교체
+      - REDIS_HOST=redis                          # TODO(8번): AWS 쪽 Redis 위치가 정해지면 교체 (지금은 같은 namespace 의 redis 가정)

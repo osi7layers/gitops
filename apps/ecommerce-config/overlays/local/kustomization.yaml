@@ -1,0 +1,17 @@
+# local : 내 PC 검증 클러스터. DB·Redis·Keycloak 모두 같은 클러스터 안
+#  ★ 실제 환경은 MySQL 이지만, 연습장의 샘플 이미지는 PostgreSQL 드라이버만 들어 있다.
+#    앱 담당이 MySQL 용 이미지를 내기 전까지 연습장만 PostgreSQL 로 둔다 (infra.sh 가 띄우는 postgres).
+#    MySQL 이미지가 나오면 아래 4줄을 지우고 infra.sh 에서 MySQL 을 띄우면 된다.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+configMapGenerator:
+  - name: ecommerce-config
+    behavior: merge
+    literals:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_JDBC_SCHEME=postgresql
+      - DB_DRIVER=org.postgresql.Driver
+      - DB_DIALECT=org.hibernate.dialect.PostgreSQLDialect

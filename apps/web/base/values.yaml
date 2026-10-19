@@ -1,0 +1,37 @@
+# ═════════════════════════════════════════════════════════════
+# frontend  —  사용자 쇼핑몰 화면 (Next.js)
+#  브라우저가 이 화면을 받은 뒤, API 는 브라우저가 APISIX(api 도메인)로 직접 호출한다.
+#  ★ API 주소(NEXT_PUBLIC_API_URL)는 이미지 "빌드할 때" 박힌다 → 환경별 이미지 빌드는 5번과 협의
+# ═════════════════════════════════════════════════════════════
+image:
+  repository: ecommerce/web   # (v7.3.12) 팀 gitops 의 이미지 이름. 실제 주소·태그는 overlays/<환경> 에서 교체 (Jenkins 는 이 이름으로 찾음)
+  tag: "latest"
+
+containerPort: 3000
+managementPort: null          # Next.js 는 관리 포트 없음
+envFrom: []                   # 공통 설정(ecommerce-config) 필요 없음
+env:
+  - name: NODE_ENV
+    value: production
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 1000m
+    memory: 512Mi
+
+startupProbe:
+  httpGet:
+    path: /
+    port: http
+  failureThreshold: 20
+readinessProbe:
+  httpGet:
+    path: /
+    port: http
+livenessProbe: null           # (v7.3.10) 차트 기본 liveness 는 Spring Boot 관리 포트용 → 프론트는 끔 (미검증)
+
+# ── 스케일링: 고정 2개 (무중단 배포·노드 점검 대비). 착수보고서상 자동 확장 대상 아님 ──
+replicaCount: 2

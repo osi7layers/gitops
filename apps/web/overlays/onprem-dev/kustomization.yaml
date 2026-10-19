@@ -1,9 +1,12 @@
+# web / onprem-dev : 온프레미스 클러스터 (Harbor 에서 Pull)
+#  이미지 태그는 5번 Jenkins 가 아래 명령으로 바꾼다:
+#    kustomize edit set image ecommerce/web=<레지스트리>/<이미지>:<태그>
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: ecommerce-dev
+namespace: ecommerce-dev   # (v7.3.12) 팀 gitops 와 같게
 resources:
   - ../../base
 images:
   - name: ecommerce/web
-    newName: harbor.osi7.shop/ecommerce/web
-    newTag: e21dd85
+    newName: harbor.osi7.shop/ecommerce/web   # 팀 gitops 값
+    newTag: e21dd85   # Jenkins 가 관리 (dev 자동 · 운영은 승급 PR) — 사람이 고치지 않음

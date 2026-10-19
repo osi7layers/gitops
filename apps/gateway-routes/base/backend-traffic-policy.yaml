@@ -1,0 +1,76 @@
+# Gateway API HTTPRoute.spec.timeouts는 APISIX Ingress Controller에서 미지원이다.
+# APISIX BackendTrafficPolicy로 upstream connect/send/read timeout을 설정한다.
+# (회원 서비스는 로그인 유지를 위한 sticky 설정도 같이 둔다)
+apiVersion: apisix.apache.org/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: auth-service-timeout
+spec:
+  targetRefs:
+    - group: ""
+      kind: Service
+      name: auth-service
+  # ★ 같은 사용자는 같은 회원 Pod 로 보낸다 (sticky)
+  #  이유: 샘플 auth-service 는 로그인 중간값(state·ticket)을 Pod 메모리에 저장한다 (SsoSessionStore.java).
+  #       Pod 2개에 번갈아 보내면 /login 과 /callback 이 다른 Pod 로 가서 로그인이 실패할 수 있다.
+  #  방법: 사용자 IP 기준 해시. AWS(ALB)는 X-Forwarded-For 헤더에 사용자 IP 가 들어오고,
+  #       헤더가 없으면(온프렘) APISIX 가 접속 IP(remote_addr)로 대신 계산한다.
+  #  (v7.3.6) hashOn: vars 는 uri·remote_addr·arg_* 같은 변수만 허용 → http_x_forwarded_for 는 APISIX 가 400 으로 거부.
+  #           헤더로 해시하려면 hashOn: header + key: 헤더 이름 (2026-10-14 연습장에서 확인)
+  #  임시 조치: 앱이 로그인 값을 Redis 에 저장하도록 바뀌면 이 설정은 지워도 된다 (앱 담당 요청).
+  loadbalancer:
+    type: chash
+    hashOn: header
+    key: x-forwarded-for
+  timeout:
+    connect: 5s
+    send: 300s
+    read: 300s
+---
+apiVersion: apisix.apache.org/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: product-service-timeout
+spec:
+  targetRefs:                     # 상품은 HTTPRoute 가 stable/canary Service 로 보내므로 둘 다 지정
+    - group: ""
+      kind: Service
+      name: product-service
+    - group: ""
+      kind: Service
+      name: product-service-stable
+    - group: ""
+      kind: Service
+      name: product-service-canary
+  timeout:
+    connect: 5s
+    send: 300s
+    read: 300s
+---
+apiVersion: apisix.apache.org/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: order-service-timeout
+spec:
+  targetRefs:
+    - group: ""
+      kind: Service
+      name: order-service
+  timeout:
+    connect: 5s
+    send: 300s
+    read: 300s
+---
+apiVersion: apisix.apache.org/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: promotion-service-timeout
+spec:
+  targetRefs:
+    - group: ""
+      kind: Service
+      name: promotion-service
+  timeout:
+    connect: 5s
+    send: 300s
+    read: 300s

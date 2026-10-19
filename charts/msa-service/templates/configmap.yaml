@@ -1,0 +1,16 @@
+{{- /*
+configmap.yaml : 이 서비스만 쓰는 설정 (values 의 config 가 비어 있으면 만들지 않음)
+ - 여러 서비스가 같이 쓰는 설정은 여기가 아니라 apps/ecommerce-config 에 둔다
+*/ -}}
+{{- if .Values.config }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "msa-service.fullname" . }}-config
+  labels:
+    {{- include "msa-service.labels" . | nindent 4 }}
+data:
+  {{- range $key, $value := .Values.config }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}
+{{- end }}

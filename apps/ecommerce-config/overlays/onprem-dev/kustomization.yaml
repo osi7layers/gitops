@@ -1,0 +1,18 @@
+# onprem-dev : 온프레미스 클러스터
+#  TODO(8번): DB 다중화 VIP 주소, Redis 클러스터 주소가 정해지면 아래 값을 교체
+#  TODO(8번): 개발용과 운영용이 같은 DB 를 쓸지 결정. 같이 쓰면 테스트 데이터가 운영 DB 에 섞임
+#             → 따로 쓰면 아래에 DB 주소 또는 서비스별 DB 이름을 개발용으로 덮어쓴다.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+configMapGenerator:
+  - name: ecommerce-config
+    behavior: merge          # base 값은 두고 아래 key 만 덮어쓰기
+    literals:
+      - DB_HOST=mysql                   # TODO(8번): 실제 환경(OCI)의 MySQL Router VIP (운영과 같은 서버, 포트는 base 의 6450)
+      - DB_NAME_SUFFIX=_dev             # 개발 전용 DB(<서비스>_dev) 사용. ★ 8번이 만든 이름 규칙과 같아야 함
+      - REDIS_HOST=redis                # TODO(8번): 실제 Redis 주소로 교체
+      - KEYCLOAK_PUBLIC_SERVER_URL=http://keycloak.dev.ecommerce.local
+      - KEYCLOAK_ISSUER_URI=http://keycloak.dev.ecommerce.local/realms/ecommerce   # 위 공개 주소와 같은 도메인
+      - JWT_ISSUER_URI=http://keycloak.dev.ecommerce.local/realms/ecommerce        # (개발 Keycloak 의 KC_HOSTNAME 과 같아야 함)

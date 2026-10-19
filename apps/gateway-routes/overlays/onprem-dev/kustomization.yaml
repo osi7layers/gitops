@@ -1,0 +1,53 @@
+# onprem-dev : 개발 네임스페이스가 onprem-main과 같은 Gateway를 쓰므로 호스트명을 분리한다.
+# 기본 예시 도메인이다. 3번 담당이 실제 도메인을 확정하면 이 값과
+# frontend의 NEXT_PUBLIC_API_URL, Keycloak redirect URI/CORS도 함께 변경한다.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+patches:
+  - target:
+      group: gateway.networking.k8s.io
+      version: v1
+      kind: HTTPRoute
+      name: frontend
+    patch: |-
+      - op: replace
+        path: /spec/hostnames/0
+        value: dev.ecommerce.local
+  - target:
+      group: gateway.networking.k8s.io
+      version: v1
+      kind: HTTPRoute
+      name: api
+    patch: |-
+      - op: replace
+        path: /spec/hostnames/0
+        value: api.dev.ecommerce.local
+  - target:
+      group: gateway.networking.k8s.io
+      version: v1
+      kind: HTTPRoute
+      name: product-service
+    patch: |-
+      - op: replace
+        path: /spec/hostnames/0
+        value: api.dev.ecommerce.local
+  - target:
+      group: gateway.networking.k8s.io
+      version: v1
+      kind: HTTPRoute
+      name: keycloak
+    patch: |-
+      - op: replace
+        path: /spec/hostnames/0
+        value: keycloak.dev.ecommerce.local
+  - target:
+      group: apisix.apache.org
+      version: v1alpha1
+      kind: PluginConfig
+      name: ecommerce-oidc
+    patch: |-
+      - op: replace
+        path: /spec/plugins/0/config/discovery
+        value: http://keycloak.ecommerce-dev.svc.cluster.local:8080/realms/ecommerce/.well-known/openid-configuration
