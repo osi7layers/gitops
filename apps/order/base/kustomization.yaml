@@ -1,4 +1,10 @@
+# order-service base : 공통 차트(charts/msa-service) + values.yaml → 이 서비스의 기본 YAML
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-# 공통 배포 내용 (Deployment, Service 등)은 K8s 담당과 구조를 정한 뒤 추가한다.
-resources: []
+helmGlobals:
+  chartHome: ../../../charts
+helmCharts:
+  - name: msa-service
+    releaseName: order-service        # = 리소스 이름 = 서비스 주소
+    namespace: ecommerce-main
+    valuesFile: values.yaml

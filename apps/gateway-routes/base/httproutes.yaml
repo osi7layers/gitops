@@ -1,0 +1,239 @@
+# Gateway API HTTPRoute rules.
+# Gateway (ecommerce-gateway) is managed by APISIX Ingress Controller in ingress-apisix.
+# Route resources are in namespace ecommerce-main (or ecommerce-dev); parentRefs names the Gateway namespace explicitly.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: frontend
+  labels:
+    app.kubernetes.io/part-of: ecommerce
+spec:
+  parentRefs:
+    - name: ecommerce-gateway
+      namespace: ingress-apisix
+  hostnames:
+    - ecommerce.local
+  rules:
+    - backendRefs:
+        - name: frontend
+          port: 3000
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: api
+  labels:
+    app.kubernetes.io/part-of: ecommerce
+spec:
+  parentRefs:
+    - name: ecommerce-gateway
+      namespace: ingress-apisix
+  hostnames:
+    - api.ecommerce.local
+  # 상품(/api/categories, /api/products) 경로는 카나리 때문에 아래 HTTPRoute product-service 로 분리
+  rules:
+    # Public auth callback/session bootstrap route, equivalent to the sample APISIX route.
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/v1/auth
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /auth/api/v1/auth
+      backendRefs:
+        - name: auth-service
+          port: 8088
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/v1/roles
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /auth/api/v1/roles
+        - type: ExtensionRef
+          extensionRef:
+            group: apisix.apache.org
+            kind: PluginConfig
+            name: ecommerce-oidc
+      backendRefs:
+        - name: auth-service
+          port: 8088
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/v1/users
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /auth/api/v1/users
+        - type: ExtensionRef
+          extensionRef:
+            group: apisix.apache.org
+            kind: PluginConfig
+            name: ecommerce-oidc
+      backendRefs:
+        - name: auth-service
+          port: 8088
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/carts
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /order/api/carts
+        - type: ExtensionRef
+          extensionRef:
+            group: apisix.apache.org
+            kind: PluginConfig
+            name: ecommerce-oidc
+      backendRefs:
+        - name: order-service
+          port: 8084
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/orders
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /order/api/orders
+        - type: ExtensionRef
+          extensionRef:
+            group: apisix.apache.org
+            kind: PluginConfig
+            name: ecommerce-oidc
+      backendRefs:
+        - name: order-service
+          port: 8084
+    # Keep the sample app's backoffice promotion route; the application owns the remainder of the path.
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /promotion/backoffice/promotions
+      filters:
+        - type: ExtensionRef
+          extensionRef:
+            group: apisix.apache.org
+            kind: PluginConfig
+            name: ecommerce-oidc
+      backendRefs:
+        - name: promotion-service
+          port: 8093
+    # Preserve the OpenAPI endpoints exposed through the original APISIX config.
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /auth/v3/api-docs
+      backendRefs:
+        - name: auth-service
+          port: 8088
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /order/v3/api-docs
+      backendRefs:
+        - name: order-service
+          port: 8084
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /promotion/v3/api-docs
+      backendRefs:
+        - name: promotion-service
+          port: 8093
+---
+# ═════════════════════════════════════════════════════════════
+# product-service : 상품 경로 전용 HTTPRoute (카나리 배포 대상)
+#  - 팀 결정: 상품만 Argo Rollouts 카나리. 요청을 stable / canary Service 로 weight 비율대로 나눈다.
+#  - 평소: stable 100 / canary 0.  배포 중: Argo Rollouts Gateway API 플러그인이 20 → 50 → 100 으로 바꿈
+#  - ★ weight 는 플러그인이 바꾸는 값이라 Argo CD 가 되돌리지 않게 ignoreDifferences 설정 필요 (5번)
+#  - 이 이름(product-service)은 apps/product/base/values.yaml 의 rollout.httpRoute 와 같아야 한다.
+# ═════════════════════════════════════════════════════════════
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: product-service
+  labels:
+    app.kubernetes.io/part-of: ecommerce
+spec:
+  parentRefs:
+    - name: ecommerce-gateway
+      namespace: ingress-apisix
+  hostnames:
+    - api.ecommerce.local          # api 경로와 같은 도메인
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/categories
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /product/api/categories
+      backendRefs:
+        - name: product-service-stable   # 기존 버전
+          port: 8086
+          weight: 100
+        - name: product-service-canary   # 새 버전 (배포 중에만 0보다 커짐)
+          port: 8086
+          weight: 0
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/products
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /product/api/products
+      backendRefs:
+        - name: product-service-stable   # 기존 버전
+          port: 8086
+          weight: 100
+        - name: product-service-canary   # 새 버전 (배포 중에만 0보다 커짐)
+          port: 8086
+          weight: 0
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /product/v3/api-docs
+      backendRefs:
+        - name: product-service-stable   # 기존 버전
+          port: 8086
+          weight: 100
+        - name: product-service-canary   # 새 버전 (배포 중에만 0보다 커짐)
+          port: 8086
+          weight: 0
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: keycloak
+  labels:
+    app.kubernetes.io/part-of: ecommerce
+spec:
+  parentRefs:
+    - name: ecommerce-gateway
+      namespace: ingress-apisix
+  hostnames:
+    - keycloak.ecommerce.local
+  rules:
+    - backendRefs:
+        - name: keycloak
+          port: 8080

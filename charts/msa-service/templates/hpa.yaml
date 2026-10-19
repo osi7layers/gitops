@@ -1,0 +1,29 @@
+{{- /*
+hpa.yaml : 부하에 따라 Pod 수 자동 조절 (metrics-server 필요)
+ 원하는 Pod 수 = 올림( 현재 Pod 수 x 현재 CPU% / 목표 CPU% )
+*/ -}}
+{{- /* KEDA 를 켠 서비스는 KEDA 가 HPA 를 직접 만들므로 여기서는 만들지 않는다 (두 HPA 가 충돌) */ -}}
+{{- if and .Values.autoscaling.enabled (not .Values.keda.enabled) }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "msa-service.fullname" . }}
+  labels:
+    {{- include "msa-service.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:               # rollout.enabled=true 면 Rollout, 아니면 Deployment (_helpers.tpl)
+    {{- include "msa-service.scaleTargetRef" . | nindent 4 }}
+  minReplicas: {{ .Values.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.autoscaling.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.autoscaling.targetCPUUtilizationPercentage }}
+  {{- with .Values.autoscaling.behavior }}
+  behavior:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}

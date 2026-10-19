@@ -1,0 +1,12 @@
+# onprem-main : 온프레미스 클러스터
+#  TODO(8번): DB 다중화 VIP 주소, Redis 클러스터 주소가 정해지면 아래 값을 교체
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+configMapGenerator:
+  - name: ecommerce-config
+    behavior: merge          # base 값은 두고 아래 key 만 덮어쓰기
+    literals:
+      - DB_HOST=mysql                   # TODO(8번): 실제 환경(OCI)의 MySQL Router VIP 로 교체 (포트는 base 의 6450)
+      - REDIS_HOST=redis                # → Redis 클러스터 주소로 교체

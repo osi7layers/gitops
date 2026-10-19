@@ -1,0 +1,45 @@
+{{- /*
+rollout.yaml : 카나리 배포용 (Argo Rollouts) — rollout.enabled=true 인 서비스만 (현재 상품만)
+ - Pod 모양은 Deployment 와 똑같다 (_helpers.tpl 의 podTemplate 공유). 바뀌는 건 교체 방식뿐.
+ - 새 버전이 나오면 HTTPRoute 의 weight 를 steps 대로 바꿔 요청 일부만 새 버전으로 보낸다.
+     stable Service(<이름>-stable) = 기존 버전,  canary Service(<이름>-canary) = 새 버전
+ - weight 조절은 Argo Rollouts 의 Gateway API 플러그인(argoproj-labs/gatewayAPI)이 한다.
+ - 클러스터에 Argo Rollouts 본체 + 플러그인이 설치돼 있어야 한다 (argoproj.io/v1alpha1 CRD).
+*/ -}}
+{{- if .Values.rollout.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: {{ include "msa-service.fullname" . }}
+  labels:
+    {{- include "msa-service.labels" . | nindent 4 }}
+spec:
+  {{- /* HPA 를 켜면 replicas 를 쓰지 않는다 (HPA 가 Rollout 의 Pod 수를 조절) */}}
+  {{- if not (include "msa-service.autoscaled" .) }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  revisionHistoryLimit: 5
+  minReadySeconds: {{ .Values.minReadySeconds }}
+  selector:
+    matchLabels:
+      {{- include "msa-service.selectorLabels" . | nindent 6 }}
+  template:
+    {{- include "msa-service.podTemplate" . | nindent 4 }}
+  strategy:
+    canary:
+      stableService: {{ include "msa-service.fullname" . }}-stable
+      canaryService: {{ include "msa-service.fullname" . }}-canary
+      maxSurge: {{ .Values.rollingUpdate.maxSurge }}
+      maxUnavailable: {{ .Values.rollingUpdate.maxUnavailable }}
+      trafficRouting:
+        plugins:
+          argoproj-labs/gatewayAPI:
+            # 이 HTTPRoute 의 stable/canary weight 를 플러그인이 바꾼다 (같은 namespace)
+            httpRoute: {{ .Values.rollout.httpRoute | default (include "msa-service.fullname" .) }}
+      {{- with .Values.rollout.steps }}
+      steps:
+        {{- toYaml . | nindent 8 }}
+      {{- else }}
+      steps: []
+      {{- end }}
+{{- end }}

@@ -1,0 +1,5 @@
+# local : 샘플 이미지에 박힌 도메인 그대로 (ecommerce.local 등)
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base

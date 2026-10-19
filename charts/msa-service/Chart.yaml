@@ -1,0 +1,11 @@
+# ─────────────────────────────────────────────────────────────
+# Chart.yaml : 공통 Helm 차트의 "명함"
+#  착수보고서 범위 서비스 5개(회원·상품·주문/장바구니/결제·쿠폰·화면)가 이 차트 하나를 같이 쓴다.
+#  서비스마다 다른 값은 apps/<서비스>/base/values.yaml 에만 적는다.
+# ─────────────────────────────────────────────────────────────
+apiVersion: v2
+name: msa-service
+description: ecommerce 공통 차트 (Deployment, Service, ConfigMap, HPA, KEDA ScaledObject, PDB)
+type: application
+version: 0.6.0          # 0.3.0(KEDA) → 0.4.0(상품 Rollout 옵션) → 0.5.0(노드 분산 배치·장애 대기 30초) → 0.6.0(liveness·우선순위·대기 컨테이너 자원)
+appVersion: "0.3.0"

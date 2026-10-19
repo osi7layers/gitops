@@ -1,0 +1,10 @@
+# promotion / local : 내 PC 검증 클러스터(local, Argo CD 배포 대상 아님)
+#  (local 은 Jenkins 대상 아님)
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+images:
+  - name: ecommerce/promotion
+    newName: ghcr.io/hoangtien2k3/promotion-service   # local·kube-test 는 샘플 이미지 (Jenkins 가 수정하지 않음)
+    newTag: "latest"          # local 은 샘플 이미지 그대로 (Jenkins 가 수정하지 않음)

@@ -1,0 +1,50 @@
+# ═════════════════════════════════════════════════════════════
+# auth-service  —  회원: 회원가입·로그인·내 정보 (로그인 자체는 Keycloak 이 처리)
+#  차트 기본값(charts/msa-service/values.yaml)과 다른 것만 적는다.
+#  값의 출처: 샘플 저장소 k8s/backend/auth-service.yaml (Kafka 대기는 제외)
+# ═════════════════════════════════════════════════════════════
+image:
+  repository: ecommerce/auth   # (v7.3.12) 팀 gitops 의 이미지 이름. 실제 주소·태그는 overlays/<환경> 에서 교체 (Jenkins 는 이 이름으로 찾음)
+  tag: "latest"
+
+containerPort: 8088         # 다른 서비스와 게이트웨이(APISIX)가 auth-service:8088 로 호출
+
+# 앱 시작 전에 열려 있어야 하는 의존 서비스 (열릴 때까지 initContainer 가 대기)
+waitFor:
+  - { name: db, hostEnv: DB_HOST, portEnv: DB_PORT }   # DB(MySQL) 주소는 ecommerce-config 를 따라감
+  - { name: keycloak, hostEnv: KEYCLOAK_HOST, portEnv: KEYCLOAK_PORT }   # Keycloak 주소도 ecommerce-config 를 따라감
+
+env:
+  # ── DB 연결 (착수보고서 261012: MySQL) ──
+  #  주소·종류는 공통 설정(ecommerce-config)의 DB_* 를 끼워 넣는다 → DB 가 바뀌어도 ecommerce-config 만 고치면 됨
+  #  SPRING_DATASOURCE_* 는 앱 application.yml 의 값을 덮어쓴다 (앱의 POSTGRES_* 변수 이름과 무관하게 동작)
+  #  ★ 앱 이미지에 MySQL 드라이버가 들어 있어야 함 (샘플 앱은 PostgreSQL 전용 → 앱 담당 수정 필요)
+  - name: SPRING_DATASOURCE_URL
+    value: "jdbc:$(DB_JDBC_SCHEME)://$(DB_HOST):$(DB_PORT)/authservice$(DB_NAME_SUFFIX)"
+  - name: SPRING_DATASOURCE_DRIVER_CLASS_NAME
+    value: "$(DB_DRIVER)"
+  - name: SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT
+    value: "$(DB_DIALECT)"
+  - name: SPRING_DATASOURCE_USERNAME
+    valueFrom:
+      secretKeyRef:
+        name: db-secret
+        key: DB_USERNAME
+  - name: SPRING_DATASOURCE_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: db-secret
+        key: DB_PASSWORD
+  # (v7.3) 로그인 토큰 확인: 서명 키는 클러스터 내부 주소에서 받고, iss 는 JWT_ISSUER_URI(공개 주소)와 비교
+  - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI
+    value: "$(KEYCLOAK_JWK_SET_URI)"
+  # 로그인 후 돌아갈 주소 (브라우저 기준 도메인). 실제 도메인이 정해지면 envs 에서 교체
+  - name: SSO_BACKEND_CALLBACK_URL
+    value: "http://api.ecommerce.local/api/v1/auth/callback"
+  - name: SSO_DEFAULT_FRONTEND_REDIRECT
+    value: "http://ecommerce.local/auth/callback"
+  - name: SSO_ALLOWED_REDIRECT_URIS
+    value: "http://ecommerce.local/auth/callback"
+
+# ── 스케일링: 고정 2개 (무중단 배포·노드 점검 대비). 착수보고서상 자동 확장 대상 아님 ──
+replicaCount: 2

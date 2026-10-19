@@ -1,0 +1,29 @@
+{{- /*
+deployment.yaml : 서비스 Pod 를 어떤 이미지로, 몇 개, 어떻게 교체하며 띄울지
+*/ -}}
+{{- /* rollout.enabled=true 인 서비스(상품)는 rollout.yaml 이 대신 만들어진다 */ -}}
+{{- if not .Values.rollout.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "msa-service.fullname" . }}
+  labels:
+    {{- include "msa-service.labels" . | nindent 4 }}
+spec:
+  {{- /* HPA 나 KEDA 를 켜면 replicas 를 쓰지 않는다 (ArgoCD 와 HPA 가 Pod 수를 두고 싸우는 것 방지) */}}
+  {{- if not (include "msa-service.autoscaled" .) }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  revisionHistoryLimit: 5
+  minReadySeconds: {{ .Values.minReadySeconds }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: {{ .Values.rollingUpdate.maxSurge }}
+      maxUnavailable: {{ .Values.rollingUpdate.maxUnavailable }}
+  selector:
+    matchLabels:
+      {{- include "msa-service.selectorLabels" . | nindent 6 }}
+  template:
+    {{- include "msa-service.podTemplate" . | nindent 4 }}
+{{- end }}

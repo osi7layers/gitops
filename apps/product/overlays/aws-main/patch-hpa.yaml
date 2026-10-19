@@ -1,0 +1,7 @@
+# AWS: 노드를 늘릴 수 있으면 최대치를 키운다 (1번 노드 구성 확정 후 조정)
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: product-service
+spec:
+  maxReplicas: 6
