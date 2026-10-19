@@ -42,7 +42,10 @@ gitops/
 │   ├── order/                         # web과 같은 구조
 │   └── promotion/                     # web과 같은 구조
 ├── platform/                          # 외부 도구 Helm values (Argo Rollouts, KEDA, 모니터링) - 예정
-├── argocd/                            # Argo CD Application / ApplicationSet - 예정
+├── argocd/
+│   ├── root.yaml                      # 루트 Application (처음 한 번만 kubectl apply)
+│   └── apps/                          # root가 동기화하는 Application들
+│       └── web-onprem-dev.yaml        # web → osi7-onprem ecommerce-dev
 └── README.md
 ```
 
@@ -68,3 +71,10 @@ gitops/
 | --- | --- |
 | CI/CD & GitOps (Jenkins, 이미지 Tag 갱신, Argo CD 연동) | CI/CD 담당 |
 | Kubernetes 매니페스트 구조 (Helm / Kustomize) | Kubernetes 담당 |
+## Argo CD
+
+Argo CD는 온프레미스 클러스터(`osi7-onprem`)의 `argocd` 네임스페이스에 설치되어 있고, `argocd/`의 Application을 **App of Apps** 방식으로 관리합니다.
+
+- `argocd/root.yaml`은 처음 한 번만 `kubectl apply -f argocd/root.yaml`로 올립니다.
+- 이후 Application 추가·수정은 `argocd/apps/`에 파일을 커밋하면 root가 자동으로 반영합니다.
+- 우리 서비스 매니페스트는 Kustomize가 Helm chart를 감싸므로 `argocd-cm`에 `kustomize.buildOptions: --enable-helm`이 설정되어 있어야 합니다.

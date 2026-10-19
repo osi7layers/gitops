@@ -1,0 +1,20 @@
+# web 개발 환경: apps/web/overlays/onprem-dev -> osi7-onprem ecommerce-dev
+# Jenkins가 overlay의 newTag를 바꾸면 자동 배포된다.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: web-onprem-dev
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/osi7layers/gitops.git
+    targetRevision: main
+    path: apps/web/overlays/onprem-dev
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: ecommerce-dev
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

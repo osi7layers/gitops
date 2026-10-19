@@ -1,0 +1,21 @@
+# Argo CD 루트 Application (App of Apps)
+# argocd/apps/ 폴더의 Application들을 Argo CD가 직접 관리하게 한다.
+# 이 파일만 처음 한 번 kubectl apply로 올리고, 이후 Application 추가·수정은 argocd/apps/에 커밋한다.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/osi7layers/gitops.git
+    targetRevision: main
+    path: argocd/apps
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
