@@ -2,9 +2,8 @@
 # ecommerce-config : 백엔드 4개가 같이 쓰는 공통 설정 (4번 담당: ConfigMap)
 #  - 출처: 샘플 저장소 k8s/configmap.yaml
 #  - 값은 config.env 에 KEY=VALUE 로 적는다.
-#  - configMapGenerator 를 쓰면 이름 뒤에 내용 해시가 붙는다 (예: ecommerce-config-7h2k9m)
-#    → 값이 바뀌면 이름이 바뀌고 → 이걸 참조하는 모든 Deployment 가 자동으로 롤링 재시작된다.
-#    (해시 없는 일반 ConfigMap 은 값을 바꿔도 이미 뜬 Pod 에 반영되지 않음)
+#  - 해시는 끈다(generatorOptions): 백엔드는 각자 따로 배포되며 이름 "ecommerce-config"로 찾기 때문
+#  - 값을 바꾸면 Pod가 자동으로 재시작되지 않으므로, 머지 후 kubectl rollout restart로 재시작한다
 # ═════════════════════════════════════════════════════════════
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
@@ -12,3 +11,5 @@ configMapGenerator:
   - name: ecommerce-config
     envs:
       - config.env
+generatorOptions:
+  disableNameSuffixHash: true
