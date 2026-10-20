@@ -17,3 +17,13 @@ spec:
         bearer_only: true
         use_jwks: true
         token_signing_alg_values_expected: RS256
+---
+apiVersion: apisix.apache.org/v1alpha1
+kind: PluginConfig
+metadata:
+  name: product-rewrite
+spec:
+  plugins:
+    - name: proxy-rewrite
+      config:
+        regex_uri: ["^/api/(.*)", "/product/api/$1"]
