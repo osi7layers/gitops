@@ -176,48 +176,20 @@ spec:
     - api.ecommerce.local          # api 경로와 같은 도메인
   rules:
     - matches:
-        - path:
-            type: PathPrefix
-            value: /api/categories
+        - path: { type: PathPrefix, value: /api/categories }
+        - path: { type: PathPrefix, value: /api/products }
+        - path: { type: PathPrefix, value: /product/v3/api-docs }
       filters:
-        - type: URLRewrite
-          urlRewrite:
-            path:
-              type: ReplacePrefixMatch
-              replacePrefixMatch: /product/api/categories
+        - type: ExtensionRef
+          extensionRef:
+            group: apisix.apache.org
+            kind: PluginConfig
+            name: product-rewrite
       backendRefs:
-        - name: product-service-stable   # 기존 버전
+        - name: product-service-stable # 기존 버전
           port: 8086
           weight: 100
-        - name: product-service-canary   # 새 버전 (배포 중에만 0보다 커짐)
-          port: 8086
-          weight: 0
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /api/products
-      filters:
-        - type: URLRewrite
-          urlRewrite:
-            path:
-              type: ReplacePrefixMatch
-              replacePrefixMatch: /product/api/products
-      backendRefs:
-        - name: product-service-stable   # 기존 버전
-          port: 8086
-          weight: 100
-        - name: product-service-canary   # 새 버전 (배포 중에만 0보다 커짐)
-          port: 8086
-          weight: 0
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /product/v3/api-docs
-      backendRefs:
-        - name: product-service-stable   # 기존 버전
-          port: 8086
-          weight: 100
-        - name: product-service-canary   # 새 버전 (배포 중에만 0보다 커짐)
+        - name: product-service-canary # 새 버전 (배포 중에만 0보다 커짐)
           port: 8086
           weight: 0
 ---
