@@ -10,7 +10,7 @@ configMapGenerator:
   - name: ecommerce-config
     behavior: merge          # base 값은 두고 아래 key 만 덮어쓰기
     literals:
-      - DB_HOST=mysql                   # TODO(8번): 실제 환경(OCI)의 MySQL Router VIP (운영과 같은 서버, 포트는 base 의 6450)
+      - DB_HOST=10.0.1.111
       - DB_NAME_SUFFIX=_dev             # 개발 전용 DB(<서비스>_dev) 사용. ★ 8번이 만든 이름 규칙과 같아야 함
       - REDIS_HOST=redis                # TODO(8번): 실제 Redis 주소로 교체
       - KEYCLOAK_PUBLIC_SERVER_URL=http://keycloak.dev.ecommerce.local
