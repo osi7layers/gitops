@@ -9,4 +9,4 @@ resources:
 images:
   - name: ecommerce/web
     newName: harbor.osi7.shop/ecommerce/web   # 팀 gitops 값
-    newTag: e21dd85   # Jenkins 가 관리 (dev 자동 · 운영은 승급 PR) — 사람이 고치지 않음
+    newTag: e21dd85

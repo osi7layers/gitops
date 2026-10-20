@@ -9,7 +9,7 @@ resources:
 images:
   - name: ecommerce/auth
     newName: harbor.osi7.shop/ecommerce/auth   # 팀 gitops 값
-    newTag: 018ab62   # Jenkins 가 관리 (dev 자동 · 운영은 승급 PR) — 사람이 고치지 않음
+    newTag: ff86e2e
 
 # 개발용 호스트명은 운영용과 분리한다. 실제 도메인 확정 후 앱/Keycloak 설정과 함께 변경.
 patches:
