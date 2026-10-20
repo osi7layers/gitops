@@ -1,6 +1,6 @@
 # onprem-dev : 개발 네임스페이스가 onprem-main과 같은 Gateway를 쓰므로 호스트명을 분리한다.
-# 기본 예시 도메인이다. 3번 담당이 실제 도메인을 확정하면 이 값과
-# frontend의 NEXT_PUBLIC_API_URL, Keycloak redirect URI/CORS도 함께 변경한다.
+# 개발 도메인: shop.dev / api.dev / keycloak.dev.osi7.shop (*.dev.osi7.shop → edge-proxy)
+# 도메인을 바꿀 때는 ecommerce-config(Keycloak 주소), auth(SSO 주소), Keycloak redirect URI도 함께 바꾼다.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
@@ -14,7 +14,7 @@ patches:
     patch: |-
       - op: replace
         path: /spec/hostnames/0
-        value: dev.ecommerce.local
+        value: shop.dev.osi7.shop
   - target:
       group: gateway.networking.k8s.io
       version: v1
@@ -23,7 +23,7 @@ patches:
     patch: |-
       - op: replace
         path: /spec/hostnames/0
-        value: api.dev.ecommerce.local
+        value: api.dev.osi7.shop
   - target:
       group: gateway.networking.k8s.io
       version: v1
@@ -32,7 +32,7 @@ patches:
     patch: |-
       - op: replace
         path: /spec/hostnames/0
-        value: api.dev.ecommerce.local
+        value: api.dev.osi7.shop
   - target:
       group: gateway.networking.k8s.io
       version: v1
@@ -41,7 +41,7 @@ patches:
     patch: |-
       - op: replace
         path: /spec/hostnames/0
-        value: keycloak.dev.ecommerce.local
+        value: keycloak.dev.osi7.shop
   - target:
       group: apisix.apache.org
       version: v1alpha1

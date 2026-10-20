@@ -13,6 +13,6 @@ configMapGenerator:
       - DB_HOST=10.0.1.111
       - DB_NAME_SUFFIX=_dev             # 개발 전용 DB(<서비스>_dev) 사용. ★ 8번이 만든 이름 규칙과 같아야 함
       - REDIS_HOST=redis                # TODO(8번): 실제 Redis 주소로 교체
-      - KEYCLOAK_PUBLIC_SERVER_URL=http://keycloak.dev.ecommerce.local
-      - KEYCLOAK_ISSUER_URI=http://keycloak.dev.ecommerce.local/realms/ecommerce   # 위 공개 주소와 같은 도메인
-      - JWT_ISSUER_URI=http://keycloak.dev.ecommerce.local/realms/ecommerce        # (개발 Keycloak 의 KC_HOSTNAME 과 같아야 함)
+      - KEYCLOAK_PUBLIC_SERVER_URL=https://keycloak.dev.osi7.shop
+      - KEYCLOAK_ISSUER_URI=https://keycloak.dev.osi7.shop/realms/ecommerce
+      - JWT_ISSUER_URI=https://keycloak.dev.osi7.shop/realms/ecommerce # 개발 Keycloak의 KC_HOSTNAME과 같아야 함

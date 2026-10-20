@@ -11,7 +11,7 @@ images:
     newName: harbor.osi7.shop/ecommerce/auth   # 팀 gitops 값
     newTag: ff86e2e
 
-# 개발용 호스트명은 운영용과 분리한다. 실제 도메인 확정 후 앱/Keycloak 설정과 함께 변경.
+# 개발용 호스트명은 운영용과 분리한다.
 patches:
   - target:
       group: apps
@@ -30,8 +30,8 @@ patches:
               - name: app
                 env:
                   - name: SSO_BACKEND_CALLBACK_URL
-                    value: "http://api.dev.ecommerce.local/api/v1/auth/callback"
+                    value: "https://api.dev.osi7.shop/api/v1/auth/callback"
                   - name: SSO_DEFAULT_FRONTEND_REDIRECT
-                    value: "http://dev.ecommerce.local/auth/callback"
+                    value: "https://shop.dev.osi7.shop/auth/callback"
                   - name: SSO_ALLOWED_REDIRECT_URIS
-                    value: "http://dev.ecommerce.local/auth/callback"
+                    value: "https://shop.dev.osi7.shop/auth/callback"
