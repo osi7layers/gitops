@@ -118,6 +118,32 @@ spec:
       backendRefs:
         - name: order-service
           port: 8084
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/payments
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /order/api/payments
+        - type: ExtensionRef
+          extensionRef:
+            group: apisix.apache.org
+            kind: PluginConfig
+            name: ecommerce-oidc
+      backendRefs:
+        - name: order-service
+          port: 8084
+    # 사용자용 쿠폰 목록·발급. 경로에 context-path(/promotion)가 이미 있어 rewrite 없음. 토큰 검사는 백엔드가 함
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /promotion/storefront/promotions
+      backendRefs:
+        - name: promotion-service
+          port: 8093
     # Keep the sample app's backoffice promotion route; the application owns the remainder of the path.
     - matches:
         - path:
