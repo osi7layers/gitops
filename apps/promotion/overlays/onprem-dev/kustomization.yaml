@@ -9,4 +9,4 @@ resources:
 images:
   - name: ecommerce/promotion
     newName: harbor.osi7.shop/ecommerce/promotion   # 팀 gitops 값
-    newTag: ff86e2e
+    newTag: 0ab8e75
