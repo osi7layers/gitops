@@ -35,6 +35,14 @@ env:
       secretKeyRef:
         name: db-secret
         key: DB_PASSWORD
+  # Keycloak에서 사용자 생성을 위한 관리자 계정, 비밀번호는 앱이 배포되는 네임스페이스에서 직접 만들어야 함.
+  - name: KEYCLOAK_ADMIN_USERNAME
+    value: osi7-admin
+  - name: KEYCLOAK_ADMIN_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: auth-keycloak-admin
+        key: password
   # (v7.3) 로그인 토큰 확인: 서명 키는 클러스터 내부 주소에서 받고, iss 는 JWT_ISSUER_URI(공개 주소)와 비교
   - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI
     value: "$(KEYCLOAK_JWK_SET_URI)"
