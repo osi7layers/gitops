@@ -232,6 +232,15 @@ spec:
   hostnames:
     - keycloak.ecommerce.local
   rules:
-    - backendRefs:
+    - matches:                        # 이 두 경로로 시작하는 요청만 Keycloak으로 (/admin 등은 404)
+        - path: { type: PathPrefix, value: /realms }      # 로그인, 토큰, issuer 정보
+        - path: { type: PathPrefix, value: /resources }   # 로그인 화면의 CSS, JS, 이미지
+      filters:
+        - type: RequestHeaderModifier                     # Keycloak에 원래 접속 정보를 알려 줌
+          requestHeaderModifier:
+            set:
+              - { name: X-Forwarded-Port, value: "443" }  # 브라우저가 쓴 포트
+              - { name: X-Forwarded-Proto, value: https } # 브라우저가 쓴 방식
+      backendRefs:
         - name: keycloak
           port: 8080
