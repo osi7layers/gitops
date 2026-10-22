@@ -6,6 +6,10 @@
 image:
   repository: ecommerce/auth   # 이미지 이름. 실제 주소·태그는 overlays/<환경> 에서 교체 (Jenkins 는 이 이름으로 찾음)
   tag: "latest"
+# Harbor(온프렘) 이미지 Pull 인증 — Secret harbor-pull 은 Git 밖, 2번이 ecommerce-dev·ecommerce-main 에 생성 (robot$ecommerce+pull)
+#  aws-main(ECR)은 노드 IAM 역할로 받으므로 이 Secret 이 없어도 정상 (없다는 경고만 남음)
+imagePullSecrets:
+  - name: harbor-pull
 
 containerPort: 8088         # 다른 서비스와 게이트웨이(APISIX)가 auth-service:8088 로 호출
 
