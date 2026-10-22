@@ -3,7 +3,7 @@
 #    kustomize edit set image ecommerce/auth=<레지스트리>/<이미지>:<태그>
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: ecommerce-main   # (v7.3.12) 팀 gitops 와 같게
+namespace: ecommerce-main
 resources:
   - ../../base
 images:
@@ -11,7 +11,7 @@ images:
     newName: 918633123181.dkr.ecr.ap-northeast-2.amazonaws.com/ecommerce/auth   # 팀 gitops 값
     newTag: 018ab62   # Jenkins 가 관리 (dev 자동 · 운영은 승급 PR) — 사람이 고치지 않음
 
-# (v7.3.19 · 4번) 운영 로그인 콜백 주소 — 2번이 운영 Keycloak redirect URI 에 등록함 (2026-10-22)
+# (4번) 운영 로그인 콜백 주소 — 2번이 운영 Keycloak redirect URI 에 등록함 (2026-10-22)
 patches:
   - target:
       group: apps

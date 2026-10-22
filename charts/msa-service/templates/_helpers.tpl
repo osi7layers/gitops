@@ -73,7 +73,7 @@ spec:
   {{- end }}
   terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
   {{- with .Values.priorityClassName }}
-  {{- /* (v7.3.10) 자원 부족 시 누가 먼저 자리를 차지하나 (platform/priority-classes.yaml) */}}
+  {{- /* 자원 부족 시 누가 먼저 자리를 차지하나 (platform/priority-classes.yaml) */}}
   priorityClassName: {{ . }}
   {{- end }}
   {{- if .Values.spread.enabled }}
@@ -86,7 +86,7 @@ spec:
         matchLabels:
           {{- include "msa-service.selectorLabels" . | nindent 10 }}
       {{- with .Values.spread.matchLabelKeys }}
-      {{- /* (v7.3.9) 같은 버전(ReplicaSet)끼리만 세어서 나눔. 교체 중 예전 Pod 까지 세면 새 Pod 가 한 노드로 몰림 (T-14) */}}
+      {{- /* 같은 버전(ReplicaSet)끼리만 세어서 나눔. 교체 중 예전 Pod 까지 세면 새 Pod 가 한 노드로 몰림 (T-14) */}}
       matchLabelKeys:
         {{- toYaml . | nindent 8 }}
       {{- end }}

@@ -48,7 +48,7 @@ rollout:
 preStopSleepSeconds: 10       # 종료 신호 전 10초 대기 → 그동안 Service 목록에서 빠짐
 terminationGracePeriodSeconds: 45   # preStop(10) + Spring Boot 가 처리 중 요청 마무리할 시간
 
-# ── 우선순위 (v7.3.10) ─────────────────────────────────────
+# ── 우선순위 ─────────────────────────────────────
 # platform/priority-classes.yaml 의 이름. 환경(envs/<환경>)에서 일괄 지정한다
 #   onprem-main · local = ecommerce-high / onprem-dev = ecommerce-low / aws-main = 지정 안 함 (EKS 미정)
 #  ★ 지정한 이름의 PriorityClass 가 클러스터에 없으면 Pod 생성이 거부된다 → 먼저 적용
@@ -62,7 +62,7 @@ spread:
   enabled: true
   maxSkew: 1                  # 노드 간 Pod 개수 차이 최대 1
   whenUnsatisfiable: ScheduleAnyway
-  # (v7.3.9) 교체(rollout restart·카나리) 때 예전 Pod 는 빼고 새 버전 Pod 끼리만 세어 나눈다 (T-14)
+  # 교체(rollout restart·카나리) 때 예전 Pod 는 빼고 새 버전 Pod 끼리만 세어 나눈다 (T-14)
   #   pod-template-hash = Deployment, rollouts-pod-template-hash = Argo Rollout. Pod 에 없는 키는 무시된다
   #   ※ 노드가 다시 살아난 뒤 이미 몰린 Pod 를 옮겨 주지는 않는다 → 0단계처럼 Pod 를 하나 지우거나 descheduler(2번과 협의)
   matchLabelKeys:
@@ -80,7 +80,7 @@ nodeFailureTolerationSeconds: 30
 #    (주소를 고정하려면 host/port 를 직접 써도 됨: { name: x, host: x, port: 1234 })
 waitFor: []
 waitForImage: busybox:1.36
-# (v7.3.10) 대기용 initContainer 자원. dev namespace 의 ResourceQuota 는 모든 컨테이너에 자원 값을 요구한다
+# 대기용 initContainer 자원. dev namespace 의 ResourceQuota 는 모든 컨테이너에 자원 값을 요구한다
 waitForResources:
   requests:
     cpu: 10m
@@ -138,7 +138,7 @@ readinessProbe:               # 요청 받을 준비: 실패하면 Service 에�
   periodSeconds: 10
   timeoutSeconds: 3
   failureThreshold: 3
-# (v7.3.10) livenessProbe 켬 : 연습장에서 백엔드 4개 모두 /actuator/health/liveness → UP 확인 (가이드 W3-1)
+# livenessProbe 켬 : 연습장에서 백엔드 4개 모두 /actuator/health/liveness → UP 확인 (가이드 W3-1)
 #   실패하면 컨테이너를 재시작한다. 기동은 startupProbe 가 끝난 뒤부터 검사하므로 느린 기동과 무관
 #   ★ /actuator/health 를 쓰지 않는 이유: DB 상태까지 포함 → DB 가 잠깐 느려지면 모든 Pod 가 동시에 재시작됨
 #   관리 포트가 없는 서비스(프론트)는 자기 values 에서 livenessProbe: null
@@ -164,7 +164,7 @@ autoscaling:
   behavior:
     scaleDown:
       stabilizationWindowSeconds: 120
-      # (v7.3.9) 1분에 1개씩 줄인다 (예전: 1분에 절반). 4→2 를 한 번에 줄이면
+      # 1분에 1개씩 줄인다 (예전: 1분에 절반). 4→2 를 한 번에 줄이면
       #   남는 2개가 한 노드에 몰릴 수 있고(T-14), 갑자기 절반이 빠져 남은 Pod 에 부하가 몰린다
       policies:
         - type: Pods
