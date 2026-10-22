@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ecommerce-config-onprem-dev
+  namespace: argocd                  # Application 자체는 argocd 네임스페이스에 둔다
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/osi7layers/gitops.git
+    targetRevision: main
+    path: apps/ecommerce-config/overlays/onprem-dev   # DB 주소 10.0.1.111이 들어 있는 개발용 설정
+  destination:
+    server: https://kubernetes.default.svc           # 지금 이 클러스터
+    namespace: ecommerce-dev
+  syncPolicy:
+    automated:
+      prune: true      # gitops에서 지운 건 클러스터에서도 지움
+      selfHeal: true   # 누가 손으로 바꾸면 gitops 상태로 되돌림

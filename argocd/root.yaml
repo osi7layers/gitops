@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root-onprem                   # 온프레미스 Argo CD가 관리하는 Application 전체의 루트
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/osi7layers/gitops.git
+    targetRevision: main
+    path: argocd/apps
+    directory:
+      recurse: true                   # apps/ 아래 하위 폴더(onprem-dev 등)까지 읽는다
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd                 # 루트가 만드는 것은 Application이고, Application은 argocd에 산다
+  syncPolicy:
+    automated:
+      prune: false                    # git에서 파일이 빠져도 Application은 지우지 않는다 (실수로 서비스가 지워지는 것 방지)
+      selfHeal: true

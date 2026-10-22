@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  annotations: {}
+  name: web-onprem-dev
+  namespace: argocd
+spec:
+  destination:
+    namespace: ecommerce-dev
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: apps/web/overlays/onprem-dev
+    repoURL: https://github.com/osi7layers/gitops.git
+    targetRevision: main
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
