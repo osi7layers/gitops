@@ -1,0 +1,19 @@
+# ═════════════════════════════════════════════════════════════
+# redis-coupon : 쿠폰 발급 기준 데이터 전용 Redis (4번 · v7.3.17 · 2026-10-21)
+#  - 저장: 쿠폰 남은 수량, 발급자 목록, pending 기록 → 유실되면 초과 발급 위험
+#  - (v7.3.19) 쿠폰은 동기 방식(Stream·worker 없음). Redis 가 비면 앱이 DB(promotion_issue) 기준으로 다시 채움(loadIfAbsent)
+#  - 디스크: PVC 2Gi + AOF appendfsync always (쓸 때마다 디스크 기록 → 장애 시 유실 최소화)
+#  - 메모리가 차면 지우지 않고 쓰기를 거부(noeviction) → 앱은 "잠시 후 다시 시도" 응답
+#  - 쓰는 서비스: promotion (REDIS_HOST=redis-coupon, ecommerce-config)
+#  - 비밀번호: Secret redis-coupon-secret / REDIS_PASSWORD (v7.3.18 캐시와 분리 · Git 밖)
+#  - 한계: Pod 1개라 고가용성(HA) 없음 → 운영에서 필요하면 Sentinel 구성(별도 Helm 차트)으로 교체
+#  - ★ StatefulSet 을 지워도 PVC(디스크)는 남는다 → 환경을 내릴 때 따로 삭제:
+#        kubectl delete pvc -n <namespace> -l app=redis-coupon
+#  - 배치: onprem-dev · onprem-main (aws-main 에는 없음 — 쿠폰 경로 온프렘 고정)
+#  - 백업: 이벤트 전후 BGSAVE 후 /data 를 복사 (docs/4번 가이드 "Redis 백업·복구")
+# ═════════════════════════════════════════════════════════════
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - statefulset.yaml
+  - service.yaml

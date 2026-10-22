@@ -1,0 +1,15 @@
+# 주소: redis-coupon:6379 (같은 namespace)
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-coupon
+  labels:
+    app: redis-coupon
+spec:
+  clusterIP: None
+  selector:
+    app: redis-coupon
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: redis

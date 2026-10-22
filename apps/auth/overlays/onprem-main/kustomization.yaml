@@ -9,3 +9,28 @@ images:
   - name: ecommerce/auth
     newName: harbor.osi7.shop/ecommerce/auth   # 팀 gitops 값
     newTag: "52cf7f7"
+
+# (v7.3.19 · 4번) 운영 로그인 콜백 주소 — 2번이 운영 Keycloak redirect URI 에 등록함 (2026-10-22)
+patches:
+  - target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: auth-service
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: auth-service
+      spec:
+        template:
+          spec:
+            containers:
+              - name: app
+                env:
+                  - name: SSO_BACKEND_CALLBACK_URL
+                    value: "https://api.osi7.shop/api/v1/auth/callback"
+                  - name: SSO_DEFAULT_FRONTEND_REDIRECT
+                    value: "https://shop.osi7.shop/auth/callback"
+                  - name: SSO_ALLOWED_REDIRECT_URIS
+                    value: "https://shop.osi7.shop/auth/callback"

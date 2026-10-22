@@ -1,14 +1,47 @@
-# onprem-main : TODO(3번 도메인 확정 후) 실제 도메인으로 교체
-#  예) 아래 주석을 풀고 값만 바꾸면 경로의 도메인이 바뀐다.
-#      (HTTPRoute 4개: frontend · api · product-service · keycloak — api 와 product-service 는 같은 API 도메인)
-#  ★ 도메인을 바꾸면 frontend 이미지(API 주소)·Keycloak 허용 주소·auth-service SSO 주소도 같이 바뀌어야 함
+# onprem-main : 운영 도메인 (v7.3.19 · 4번 · 2026-10-22 2번 확인)
+#  shop.osi7.shop / api.osi7.shop / keycloak.osi7.shop (dev 의 *.dev.osi7.shop 에서 .dev 만 뺀 규칙)
+#  - Keycloak redirect URI(shop·api 콜백)는 2번이 운영 Keycloak 에 등록함
+#  - 로그인 검사(OIDC) 주소는 base 가 이미 keycloak.ecommerce-main 이라 덮어쓰지 않음
+#  - CORS(GatewayProxy, shop.osi7.shop)는 Gateway 전체 설정이라 운영도 그대로 (2번)
+#  ★ web 이미지에는 API 주소(NEXT_PUBLIC_API_URL)가 빌드 때 박힌다 → 운영 web 은 https://api.osi7.shop 으로 빌드한 이미지여야 함 (5번)
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ../../base
-# patches:
-#   - target: { kind: HTTPRoute, name: frontend }
-#     patch: |-
-#       - op: replace
-#         path: /spec/hostnames/0
-#         value: shop.<실제도메인>
+patches:
+  - target:
+      group: gateway.networking.k8s.io
+      version: v1
+      kind: HTTPRoute
+      name: frontend
+    patch: |-
+      - op: replace
+        path: /spec/hostnames/0
+        value: shop.osi7.shop
+  - target:
+      group: gateway.networking.k8s.io
+      version: v1
+      kind: HTTPRoute
+      name: api
+    patch: |-
+      - op: replace
+        path: /spec/hostnames/0
+        value: api.osi7.shop
+  - target:
+      group: gateway.networking.k8s.io
+      version: v1
+      kind: HTTPRoute
+      name: product-service
+    patch: |-
+      - op: replace
+        path: /spec/hostnames/0
+        value: api.osi7.shop
+  - target:
+      group: gateway.networking.k8s.io
+      version: v1
+      kind: HTTPRoute
+      name: keycloak
+    patch: |-
+      - op: replace
+        path: /spec/hostnames/0
+        value: keycloak.osi7.shop
