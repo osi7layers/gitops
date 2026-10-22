@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: redis-coupon-onprem-main
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/osi7layers/gitops.git
+    targetRevision: main
+    path: apps/redis-coupon/overlays/onprem-main
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: ecommerce-main
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
