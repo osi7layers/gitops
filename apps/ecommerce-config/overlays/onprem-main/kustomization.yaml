@@ -1,5 +1,5 @@
 # onprem-main : 온프레미스 운영 (ecommerce-main)
-#  (v7.3.19 · 4번) 값 확정 2026-10-22
+#  (4번) 값 확정 2026-10-22
 #   DB      : 8번 — MySQL Router 10.0.1.111 (포트는 base 의 6450 · 읽기/쓰기 분할), DB 이름 꼬리 없음(base 빈 값)
 #   Keycloak: 2번 — 운영 Keycloak 은 ecommerce-main 의 Service keycloak:8080, realm ecommerce (내부 주소는 base 그대로)
 #             바깥 주소(KC_HOSTNAME) https://keycloak.osi7.shop → issuer 가 이 값과 글자까지 같아야 토큰 검사 통과

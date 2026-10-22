@@ -3,7 +3,7 @@
 #    kustomize edit set image ecommerce/promotion=<레지스트리>/<이미지>:<태그>
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: ecommerce-dev   # (v7.3.12) 팀 gitops 와 같게
+namespace: ecommerce-dev
 resources:
   - ../../base
 images:

@@ -4,7 +4,7 @@
 #  값의 출처: 샘플 저장소 k8s/backend/product-service.yaml (Kafka 대기는 제외)
 # ═════════════════════════════════════════════════════════════
 image:
-  repository: ecommerce/product   # (v7.3.12) 팀 gitops 의 이미지 이름. 실제 주소·태그는 overlays/<환경> 에서 교체 (Jenkins 는 이 이름으로 찾음)
+  repository: ecommerce/product   # 이미지 이름. 실제 주소·태그는 overlays/<환경> 에서 교체 (Jenkins 는 이 이름으로 찾음)
   tag: "latest"
 
 containerPort: 8086         # 다른 서비스와 게이트웨이(APISIX)가 product-service:8086 로 호출
@@ -34,7 +34,7 @@ env:
       secretKeyRef:
         name: db-secret
         key: DB_PASSWORD
-  # (v7.3) 로그인 토큰 확인: 서명 키는 클러스터 내부 주소에서 받고, iss 는 JWT_ISSUER_URI(공개 주소)와 비교
+  # 로그인 토큰 확인: 서명 키는 클러스터 내부 주소에서 받고, iss 는 JWT_ISSUER_URI(공개 주소)와 비교
   - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI
     value: "$(KEYCLOAK_JWK_SET_URI)"
 

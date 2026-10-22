@@ -1,4 +1,4 @@
-# onprem-main : 운영 도메인 (v7.3.19 · 4번 · 2026-10-22 2번 확인)
+# onprem-main : 운영 도메인 (4번 · 2026-10-22 2번 확인)
 #  shop.osi7.shop / api.osi7.shop / keycloak.osi7.shop (dev 의 *.dev.osi7.shop 에서 .dev 만 뺀 규칙)
 #  - Keycloak redirect URI(shop·api 콜백)는 2번이 운영 Keycloak 에 등록함
 #  - 로그인 검사(OIDC) 주소는 base 가 이미 keycloak.ecommerce-main 이라 덮어쓰지 않음

@@ -1,9 +1,9 @@
 # ═════════════════════════════════════════════════════════════
-# redis-cache : 상품 조회 캐시 전용 Redis (4번 · v7.3.17 · 2026-10-21)
+# redis-cache : 상품 조회 캐시 전용 Redis (4번 · 2026-10-21)
 #  - 지워져도 되는 값만 둔다 → 디스크 없음(emptyDir), 메모리가 차면 오래 안 쓴 키부터 삭제(allkeys-lru)
 #  - 쿠폰 데이터는 redis-coupon 에 따로 둔다 (캐시가 쿠폰 메모리를 잠식하지 않게 · 리뷰 반영)
-#  - 쓰는 서비스: 아직 없음 (v7.3.19) — product 캐시 기능이 생기면 연결. 미리 띄워 둠
-#  - 비밀번호: Secret redis-cache-secret (v7.3.18 분리) / REDIS_PASSWORD (Git 밖, 클러스터에 직접 생성)
+#  - 쓰는 서비스: 아직 없음 — product 캐시 기능이 생기면 연결. 미리 띄워 둠
+#  - 비밀번호: Secret redis-cache-secret / REDIS_PASSWORD (Git 밖, 클러스터에 직접 생성)
 # ═════════════════════════════════════════════════════════════
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization

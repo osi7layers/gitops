@@ -4,7 +4,7 @@
 #  ★ API 주소(NEXT_PUBLIC_API_URL)는 이미지 "빌드할 때" 박힌다 → 환경별 이미지 빌드는 5번과 협의
 # ═════════════════════════════════════════════════════════════
 image:
-  repository: ecommerce/web   # (v7.3.12) 팀 gitops 의 이미지 이름. 실제 주소·태그는 overlays/<환경> 에서 교체 (Jenkins 는 이 이름으로 찾음)
+  repository: ecommerce/web   # 이미지 이름. 실제 주소·태그는 overlays/<환경> 에서 교체 (Jenkins 는 이 이름으로 찾음)
   tag: "latest"
 
 containerPort: 3000
@@ -31,7 +31,7 @@ readinessProbe:
   httpGet:
     path: /
     port: http
-livenessProbe: null           # (v7.3.10) 차트 기본 liveness 는 Spring Boot 관리 포트용 → 프론트는 끔 (미검증)
+livenessProbe: null           # 차트 기본 liveness 는 Spring Boot 관리 포트용 → 프론트는 끔 (미검증)
 
 # ── 스케일링: 고정 2개 (무중단 배포·노드 점검 대비). 착수보고서상 자동 확장 대상 아님 ──
 replicaCount: 2

@@ -2,7 +2,7 @@
 # 승급 PR로 직접 newTag를 apps/<서비스>/overlays/onprem-dev의 images.newTag 값으로 갱신한다.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: ecommerce-main   # (v7.3.12) 팀 gitops 와 같게
+namespace: ecommerce-main
 resources:
   - ../../base
 images:
@@ -10,7 +10,7 @@ images:
     newName: harbor.osi7.shop/ecommerce/auth   # 팀 gitops 값
     newTag: "52cf7f7"
 
-# (v7.3.19 · 4번) 운영 로그인 콜백 주소 — 2번이 운영 Keycloak redirect URI 에 등록함 (2026-10-22)
+# (4번) 운영 로그인 콜백 주소 — 2번이 운영 Keycloak redirect URI 에 등록함 (2026-10-22)
 patches:
   - target:
       group: apps
