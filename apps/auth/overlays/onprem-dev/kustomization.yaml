@@ -9,7 +9,7 @@ resources:
 images:
   - name: ecommerce/auth
     newName: harbor.osi7.shop/ecommerce/auth   # 팀 gitops 값
-    newTag: 52cf7f7
+    newTag: "52cf7f7"
 
 # 개발용 호스트명은 운영용과 분리한다.
 patches:
