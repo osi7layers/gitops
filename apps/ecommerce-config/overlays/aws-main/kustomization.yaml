@@ -1,7 +1,11 @@
 # aws-main : AWS 클러스터 (EKS)
-#  ★ 261008: RDS 없음. DB 는 온프렘에 계속 유지 → AWS 앱은 Site-to-Site VPN 으로 온프렘 DB VIP 에 접속한다.
-#  ★ 샘플 앱은 서비스당 DB 주소가 1개라 읽기/쓰기 분리 불가 (VIP 하나만 사용)
-#  TODO(8번·3번): 온프렘 DB VIP 의 VPN 경유 주소, AWS 쪽에서 쓸 Redis 주소
+#  ★ 261008: RDS 없음. DB 는 온프렘에 계속 유지 → AWS 앱은 온프렘 DB 에 접속한다.
+#  ★ 샘플 앱은 서비스당 DB 주소가 1개라 읽기/쓰기 분리 불가 (주소 하나만 사용)
+#  (v7.3.19 · 4번) DB: edge-proxy 공인 IP 132.145.89.131:6450 → 온프렘 Router 로 포워딩 (2번 · 2026-10-22)
+#  Redis: AWS 에는 redis-coupon 이 없음 (쿠폰 경로 온프렘 고정). base 의 REDIS_HOST=redis-coupon 은 연결 실패 →
+#         promotion 은 health UP 유지, 쿠폰 목록은 DB 값, 발급만 503 (2번 확인) — 초과 발급 대신 실패하는 안전한 쪽
+#  TODO(1번): AWS 도 온프렘 Keycloak 을 같이 쓰는지 (issuer) 확정되면 아래 주석 해제.
+#             AWS 클러스터 안에는 keycloak Service 가 없으므로 내부 주소(SERVER_URL·JWK)도 바깥 주소로 바꿔야 함
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
@@ -10,5 +14,9 @@ configMapGenerator:
   - name: ecommerce-config
     behavior: merge
     literals:
-      - DB_HOST=db-vip.onprem.internal     # TODO(8번·3번): 온프렘 MySQL VIP 의 VPN 경유 주소로 교체
-      - REDIS_HOST=redis                          # TODO(8번): AWS 쪽 Redis 위치가 정해지면 교체 (지금은 같은 namespace 의 redis 가정)
+      - DB_HOST=132.145.89.131
+      # - KEYCLOAK_SERVER_URL=https://keycloak.osi7.shop
+      # - KEYCLOAK_JWK_SET_URI=https://keycloak.osi7.shop/realms/ecommerce/protocol/openid-connect/certs
+      # - KEYCLOAK_PUBLIC_SERVER_URL=https://keycloak.osi7.shop
+      # - KEYCLOAK_ISSUER_URI=https://keycloak.osi7.shop/realms/ecommerce
+      # - JWT_ISSUER_URI=https://keycloak.osi7.shop/realms/ecommerce

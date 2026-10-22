@@ -1,0 +1,95 @@
+# 상품 캐시 Redis 1개 (StatefulSet) — 지워져도 되는 값만
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis-cache
+  labels:
+    app: redis-cache
+    app.kubernetes.io/name: redis-cache
+    app.kubernetes.io/component: cache
+    app.kubernetes.io/part-of: ecommerce
+spec:
+  serviceName: redis-cache
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis-cache
+  template:
+    metadata:
+      labels:
+        app: redis-cache
+        app.kubernetes.io/name: redis-cache
+        app.kubernetes.io/component: cache
+        app.kubernetes.io/part-of: ecommerce
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999            # 공식 redis(alpine) 이미지의 redis 사용자 (uid 999 · gid 1000)
+        runAsGroup: 1000
+        fsGroup: 1000             # /data 를 redis 가 쓸 수 있게
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: redis
+          image: redis:7.4-alpine
+          command: ["redis-server"]
+          args:
+            - --requirepass
+            - $(REDIS_PASSWORD)
+            # 디스크 저장 안 함 (캐시라 재시작하면 비어도 됨 → DB 에서 다시 채움)
+            - --appendonly
+            - "no"
+            - --save
+            - ""
+            # 메모리가 차면 오래 안 쓴 키부터 삭제 → 컨테이너 상한(256Mi)을 넘지 않게
+            - --maxmemory
+            - 200mb
+            - --maxmemory-policy
+            - allkeys-lru
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-cache-secret
+                  key: REDIS_PASSWORD
+            - name: REDISCLI_AUTH          # redis-cli 가 비밀번호를 경고 없이 쓰게 함 (Probe·점검용)
+              valueFrom:
+                secretKeyRef:
+                  name: redis-cache-secret
+                  key: REDIS_PASSWORD
+          ports:
+            - name: redis
+              containerPort: 6379
+          readinessProbe:
+            exec:
+              command: ["redis-cli", "ping"]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+          livenessProbe:
+            tcpSocket:
+              port: redis
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi       # 요청=상한 (다른 앱과 같은 규칙)
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          emptyDir:
+            sizeLimit: 1Gi
