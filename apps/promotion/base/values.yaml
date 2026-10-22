@@ -38,11 +38,12 @@ env:
   - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI
     value: "$(KEYCLOAK_JWK_SET_URI)"
   # ── Redis (선착순 쿠폰 재고) ──
-  #  비밀번호는 redis-secret 에서 읽는다. Secret 이 없는 환경(main, aws-main)에서도 Pod 가 뜨도록 optional
+  #  (v7.3.19 · 4번) 비밀번호는 redis-coupon-secret 에서 읽는다 (예전 redis-secret → 4번 Redis 로 전환).
+  #  Secret 이 없는 환경(aws-main)에서도 Pod 가 뜨도록 optional
   - name: REDIS_PASSWORD
     valueFrom:
       secretKeyRef:
-        name: redis-secret
+        name: redis-coupon-secret
         key: REDIS_PASSWORD
         optional: true
 
