@@ -9,7 +9,7 @@ resources:
 images:
   - name: ecommerce/product
     newName: harbor.osi7.shop/ecommerce/product   # 팀 gitops 값
-    newTag: "52cf7f7"
+    newTag: "c85867e"
 # 카나리 단계 : 사람이 승인하던 pause 대신 분석(analysis)으로 자동 승급·롤백(dev에서 확인한 것과 같은 설정)
 patches:
   - target:
