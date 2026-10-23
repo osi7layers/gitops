@@ -1,7 +1,7 @@
 # onprem-dev : 온프레미스 클러스터
-#  TODO(8번): DB 다중화 VIP 주소, Redis 클러스터 주소가 정해지면 아래 값을 교체
-#  TODO(8번): 개발용과 운영용이 같은 DB 를 쓸지 결정. 같이 쓰면 테스트 데이터가 운영 DB 에 섞임
-#             → 따로 쓰면 아래에 DB 주소 또는 서비스별 DB 이름을 개발용으로 덮어쓴다.
+#  DB : MySQL Router 10.0.1.111:6450 (8번 확정). 개발·운영은 같은 서버, DB 와 계정을 따로 씀
+#       → 개발은 DB 이름 뒤에 _dev (예: productservice_dev), 계정은 namespace 별 db-secret
+#  Redis : 4번 redis-coupon (같은 namespace 안 Service 이름, base 값 그대로)
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
