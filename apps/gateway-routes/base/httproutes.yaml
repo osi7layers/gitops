@@ -212,10 +212,14 @@ spec:
             kind: PluginConfig
             name: product-rewrite
       backendRefs:
-        - name: product-service-stable # 기존 버전
+        - group: ""
+          kind: Service
+          name: product-service-stable # 기존 버전
           port: 8086
           weight: 100
-        - name: product-service-canary # 새 버전 (배포 중에만 0보다 커짐)
+        - group: ""
+          kind: Service
+          name: product-service-canary # 새 버전 (배포 중에만 0보다 커짐)
           port: 8086
           weight: 0
 ---
