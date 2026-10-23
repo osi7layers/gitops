@@ -1,9 +1,12 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  annotations: {}
   name: web-onprem-dev
   namespace: argocd
+  annotations:
+    # sync 실패, Degraded일 때 Slack(slack-webhook)으로 알림
+    notifications.argoproj.io/subscribe.on-sync-failed.slack-webhook: ""
+    notifications.argoproj.io/subscribe.on-health-degraded.slack-webhook: ""
 spec:
   destination:
     namespace: ecommerce-dev

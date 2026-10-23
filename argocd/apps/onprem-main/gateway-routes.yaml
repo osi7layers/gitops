@@ -3,6 +3,10 @@ kind: Application
 metadata:
   name: gateway-routes-onprem-main
   namespace: argocd
+  annotations:
+    # sync 실패, Degraded일 때 Slack(slack-webhook)으로 알림
+    notifications.argoproj.io/subscribe.on-sync-failed.slack-webhook: ""
+    notifications.argoproj.io/subscribe.on-health-degraded.slack-webhook: ""
 spec:
   project: default
   source:
