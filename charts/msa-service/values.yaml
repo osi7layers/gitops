@@ -105,9 +105,12 @@ podAnnotations: {}
 # ── 리소스 (샘플 앱 기준값) ──────────────────────────────────
 # 샘플 공통 설정의 JAVA_TOOL_OPTIONS 가 힙을 200MB 로 제한하므로 512Mi 면 충분
 # ★ HPA 의 CPU % 는 requests.cpu 기준. requests 가 없으면 HPA 가 동작하지 않음
+# CPU 요청: 실제 사용(평소 1~5m)에 맞춰 100m. 기동·부하 땐 limits(1000m)까지 순간 사용 가능
+#  (250m 일 때 dev+main 이 같은 노드에서 예약 95% → 교체·HPA·KEDA 새 Pod 가 Pending, 2026-10-23)
+#  HPA 70% 기준도 이 값 기준이라 Pod 당 70m 넘게 쓰면 늘어남
 resources:
   requests:
-    cpu: 250m
+    cpu: 100m
     memory: 512Mi
   limits:
     cpu: 1000m
