@@ -73,7 +73,7 @@ spec:
   {{- end }}
   terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
   {{- with .Values.priorityClassName }}
-  {{- /* 자원 부족 시 누가 먼저 자리를 차지하나 (platform/priority-classes.yaml) */}}
+  {{- /* 자원 부족 시 누가 먼저 자리를 차지하나 (지금은 값이 비어 있어 안 들어감) */}}
   priorityClassName: {{ . }}
   {{- end }}
   {{- if .Values.spread.enabled }}
