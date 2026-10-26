@@ -1,8 +1,8 @@
 # aws-main : 운영 도메인 (4번) — Route 53 가중치로 온프렘과 같은 도메인을 나눠 받음
 #  shop.osi7.shop / api.osi7.shop (온프렘 main 과 같은 값)
-#  TODO(1번): Keycloak 을 온프렘 것 하나로 같이 쓰는지(issuer) 확정 후
-#   - 같이 쓰면: AWS 에는 keycloak Service 가 없음 → keycloak 경로는 AWS 에서 빼거나 온프렘으로 넘기고,
-#                ecommerce-oidc 의 discovery 를 https://keycloak.osi7.shop/realms/ecommerce/.well-known/openid-configuration 로 바꾼다
+#  Keycloak: AWS 는 온프렘 운영 Keycloak 을 바깥 주소(keycloak.osi7.shop)로 같이 쓴다 (2026-10-26)
+#   - AWS 에는 keycloak Service 가 없으므로 keycloak HTTPRoute 는 아래 patch 로 뺀다
+#   - ecommerce-oidc 의 discovery 도 바깥 주소로 바꾼다
 #  ★ web 이미지에는 API 주소가 빌드 때 박힌다 → https://api.osi7.shop 으로 빌드한 이미지여야 함 (5번)
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
@@ -39,3 +39,25 @@ patches:
       - op: replace
         path: /spec/hostnames/0
         value: api.osi7.shop
+  # AWS에는 keycloak Service가 없다 (keycloak.osi7.shop 은 온프렘 전용 레코드) → keycloak 라우트는 만들지 않는다
+  - target:
+      group: gateway.networking.k8s.io
+      version: v1
+      kind: HTTPRoute
+      name: keycloak
+    patch: |-
+      $patch: delete
+      apiVersion: gateway.networking.k8s.io/v1
+      kind: HTTPRoute
+      metadata:
+        name: keycloak
+  # 로그인 검사(OIDC)는 온프렘 Keycloak 바깥 주소에서 설정을 받는다
+  - target:
+      group: apisix.apache.org
+      version: v1alpha1
+      kind: PluginConfig
+      name: ecommerce-oidc
+    patch: |-
+      - op: replace
+        path: /spec/plugins/0/config/discovery
+        value: https://keycloak.osi7.shop/realms/ecommerce/.well-known/openid-configuration

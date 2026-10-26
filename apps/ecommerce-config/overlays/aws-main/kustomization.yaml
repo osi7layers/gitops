@@ -4,8 +4,8 @@
 #  (4번) DB: edge-proxy 공인 IP 132.145.89.131:6450 → 온프렘 Router 로 포워딩 (2번 · 2026-10-22)
 #  Redis: AWS 에는 redis-coupon 이 없음 (쿠폰 경로 온프렘 고정). base 의 REDIS_HOST=redis-coupon 은 연결 실패 →
 #         promotion 은 health UP 유지, 쿠폰 목록은 DB 값, 발급만 503 (2번 확인) — 초과 발급 대신 실패하는 안전한 쪽
-#  TODO(1번): AWS 도 온프렘 Keycloak 을 같이 쓰는지 (issuer) 확정되면 아래 주석 해제.
-#             AWS 클러스터 안에는 keycloak Service 가 없으므로 내부 주소(SERVER_URL·JWK)도 바깥 주소로 바꿔야 함
+#  Keycloak: AWS 에는 Keycloak 이 없어서 온프렘 운영 Keycloak 을 바깥 주소(keycloak.osi7.shop)로 같이 쓴다 (2026-10-26)
+#            issuer 가 onprem-main 과 같아야 가중치 전환 중에도 온프렘에서 받은 토큰을 AWS 앱이 받아 준다
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
@@ -15,8 +15,12 @@ configMapGenerator:
     behavior: merge
     literals:
       - DB_HOST=132.145.89.131
-      # - KEYCLOAK_SERVER_URL=https://keycloak.osi7.shop
-      # - KEYCLOAK_JWK_SET_URI=https://keycloak.osi7.shop/realms/ecommerce/protocol/openid-connect/certs
-      # - KEYCLOAK_PUBLIC_SERVER_URL=https://keycloak.osi7.shop
-      # - KEYCLOAK_ISSUER_URI=https://keycloak.osi7.shop/realms/ecommerce
-      # - JWT_ISSUER_URI=https://keycloak.osi7.shop/realms/ecommerce
+      # auth 가 시작 전에 열릴 때까지 기다리는 주소 (바깥 주소는 HTTPS 라 443)
+      - KEYCLOAK_HOST=keycloak.osi7.shop
+      - KEYCLOAK_PORT=443
+      - KEYCLOAK_SERVER_URL=https://keycloak.osi7.shop
+      - KEYCLOAK_PUBLIC_SERVER_URL=https://keycloak.osi7.shop
+      - KEYCLOAK_JWK_SET_URI=https://keycloak.osi7.shop/realms/ecommerce/protocol/openid-connect/certs
+      - KEYCLOAK_ISSUER_URI=https://keycloak.osi7.shop/realms/ecommerce
+      - JWT_ISSUER_URI=https://keycloak.osi7.shop/realms/ecommerce
+      
