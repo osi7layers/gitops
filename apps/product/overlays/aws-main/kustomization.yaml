@@ -1,6 +1,5 @@
-# product / aws-main : AWS 클러스터 (ECR 에서 Pull)
-#  이미지 태그는 5번 Jenkins 가 아래 명령으로 바꾼다:
-#    kustomize edit set image ecommerce/product=<레지스트리>/<이미지>:<태그>
+# product / onprem-main : 온프레미스 클러스터 (Harbor 에서 Pull)
+# 승급 PR로 직접 newTag를 apps/<서비스>/overlays/onprem-dev의 images.newTag 값으로 갱신한다.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: ecommerce-main
@@ -9,6 +8,6 @@ resources:
 images:
   - name: ecommerce/product
     newName: 918633123181.dkr.ecr.ap-northeast-2.amazonaws.com/ecommerce/product   # 팀 gitops 값
-    newTag: 018ab62   # Jenkins 가 관리 (dev 자동 · 운영은 승급 PR) — 사람이 고치지 않음
+    newTag: "4aaccf9"
 patches:
   - path: patch-hpa.yaml
