@@ -38,8 +38,8 @@ rollout:
   #  pause: {}            → 사람이 승인할 때까지 대기 (kubectl argo rollouts promote <이름>)
   #  pause: {duration: 2m} → 2분 뒤 자동 진행
   # 마지막 단계가 끝나면 자동으로 100% 전환.
-  #  onprem-main 은 이 단계 그대로 (20% 에서 멈추면 5번이 승인)
-  #  onprem-dev 는 apps/product/overlays/onprem-dev 에서 pause 대신 analysis(5xx 비율)로 자동 승급·롤백 (#24)
+  #  아래는 차트 기본값(사람 승인). 실제 onprem-dev·onprem-main 은 apps/product/overlays/<환경> 에서
+  #  pause 대신 analysis(카나리 Pod 5xx 비율)로 자동 승급·롤백 (#24 dev, #26 main)
   steps:
     - setWeight: 20
     - pause: {}
