@@ -1,0 +1,30 @@
+# ═════════════════════════════════════════════════════════════
+# components/coupon-pin-onprem : AWS 로 들어온 "쿠폰 발급" 요청을 온프렘으로 넘김 (4번 · 2026-10-21)
+#  왜: 이전(8:2 · 5:5 …) 중에는 온프렘·AWS 에 쿠폰 Redis 가 따로 있어서, 같은 사용자가 양쪽에서 한 장씩 받을 수 있다.
+#      쿠폰 발급 경로만 항상 한 곳(이전 초반: 온프렘)에서 처리하면 중복 확인·수량이 전체 서비스 기준으로 정확하다.
+#  어떻게: AWS APISIX 의 api HTTPRoute 중 /promotion/storefront/promotions 규칙의 대상을
+#          온프렘 입구(edge-proxy 132.145.89.131:443)로 바꾼다. Host 는 api.osi7.shop 그대로 → 온프렘의 기존 경로·인증서 사용
+#  켜는 곳: apps/gateway-routes/overlays/aws-main/kustomization.yaml 의 components 주석 해제
+#  끄는 때: 고정 위치를 AWS 로 바꿀 때 (쿠폰 이벤트 없는 시간에. 발급은 동기 방식이라 따로 비울 큐 없음)
+#  검증: APISIX Ingress Controller 2.2 가 selector 없는 Service + EndpointSlice(외부 IP) 와
+#        BackendTrafficPolicy scheme/passHost/upstreamHost 를 이 구성대로 처리하는 것 kube-test 에서 확인
+# ═════════════════════════════════════════════════════════════
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+resources:
+  - onprem-coupon-backend.yaml
+patches:
+  # api HTTPRoute 의 7번째 규칙(index 6)이 쿠폰 발급 경로인지 먼저 확인(test) → 맞을 때만 대상 교체 (규칙 순서가 바뀌면 빌드 실패로 알려 줌)
+  - target:
+      group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: api
+    patch: |-
+      - op: test
+        path: /spec/rules/6/matches/0/path/value
+        value: /promotion/storefront/promotions
+      - op: replace
+        path: /spec/rules/6/backendRefs
+        value:
+          - name: coupon-onprem
+            port: 443
