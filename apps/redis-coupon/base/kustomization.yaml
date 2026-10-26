@@ -10,7 +10,7 @@
 #  - ★ StatefulSet 을 지워도 PVC(디스크)는 남는다 → 환경을 내릴 때 따로 삭제:
 #        kubectl delete pvc -n <namespace> -l app=redis-coupon
 #  - 배치: onprem-dev · onprem-main (aws-main 에는 없음 — 쿠폰 경로 온프렘 고정)
-#  - 백업: 이벤트 전후 BGSAVE 후 /data 를 복사 (docs/4번 가이드 "Redis 백업·복구")
+#  - 백업: 이벤트 전후 BGSAVE 후 /data 를 복사 (Redis 가 비어도 앱이 DB 기준으로 다시 채움)
 # ═════════════════════════════════════════════════════════════
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
