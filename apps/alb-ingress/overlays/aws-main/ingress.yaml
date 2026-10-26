@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: apisix
+  namespace: ingress-apisix
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip  # APISIX Pod 9080으로 바로 보냄 (NodePort 안 씀)
+    alb.ingress.kubernetes.io/load-balancer-name: osi7-alb # 이름 고정 (Grafana에서 찾기 쉽게)
+    alb.ingress.kubernetes.io/security-groups: osi7-alb-sg # Terraform이 만든 SG. 이름으로 적어서 apply마다 바뀌는 ID를 피함
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-northeast-2:918633123181:certificate/6338463b-6979-4a0b-84ce-9116e4b2d442
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+    alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS13-1-2-2021-06
+    alb.ingress.kubernetes.io/healthcheck-port: "7085" # APISIX 상태 엔드포인트
+    alb.ingress.kubernetes.io/healthcheck-path: /status/ready
+    alb.ingress.kubernetes.io/success-codes: "200"
+spec:
+  ingressClassName: alb
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: apisix-gateway
+                port:
+                  number: 80 # Service 포트 (target-type ip라 ALB는 Pod 9080으로 감)
