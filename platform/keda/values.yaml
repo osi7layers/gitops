@@ -1,0 +1,4 @@
+# 기록용. Argo CD가 자동 배포하지 않음.
+# chart: kedacore/keda 2.21.0 (app 2.21.0), release: keda, namespace: keda
+# helm get values 결과 사용자 지정 값 없음 (차트 기본값으로 설치됨)
+{}
