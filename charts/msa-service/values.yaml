@@ -142,7 +142,7 @@ readinessProbe:               # 요청 받을 준비: 실패하면 Service 에�
   periodSeconds: 10
   timeoutSeconds: 3
   failureThreshold: 3
-# livenessProbe 켬 : 연습장에서 백엔드 4개 모두 /actuator/health/liveness → UP 확인 (가이드 W3-1)
+# livenessProbe 켬 : 백엔드 4개 모두 /actuator/health/liveness → UP 확인 (dev·main 정상 동작)
 #   실패하면 컨테이너를 재시작한다. 기동은 startupProbe 가 끝난 뒤부터 검사하므로 느린 기동과 무관
 #   ★ /actuator/health 를 쓰지 않는 이유: DB 상태까지 포함 → DB 가 잠깐 느려지면 모든 Pod 가 동시에 재시작됨
 #   관리 포트가 없는 서비스(프론트)는 자기 values 에서 livenessProbe: null
