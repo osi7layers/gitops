@@ -1,0 +1,7 @@
+# alb-ingress / aws-main : AWS 진입용 ALB (LB Controller가 이 Ingress를 보고 ALB를 만든다)
+#  값은 명호님 Terraform 출력 기준: ACM 인증서, 보안 그룹 osi7-alb-sg, 상태 검사 7085 /status/ready
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: ingress-apisix
+resources:
+  - ingress.yaml

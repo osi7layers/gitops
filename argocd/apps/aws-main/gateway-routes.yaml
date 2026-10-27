@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gateway-routes-aws-main
+  namespace: argocd
+  annotations:
+    # sync 실패, Degraded일 때 Slack(slack-webhook)으로 알림
+    notifications.argoproj.io/subscribe.on-sync-failed.slack-webhook: ""
+    notifications.argoproj.io/subscribe.on-health-degraded.slack-webhook: ""
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/osi7layers/gitops.git
+    targetRevision: main
+    path: apps/gateway-routes/overlays/aws-main
+  destination:
+    name: osi7-aws
+    namespace: ecommerce-main
+  ignoreDifferences:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: product-service
+      jqPathExpressions:
+        - .spec.rules[].backendRefs[].weight
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - RespectIgnoreDifferences=true

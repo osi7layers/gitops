@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: alb-ingress-aws-main
+  namespace: argocd
+  annotations:
+    # sync 실패, Degraded일 때 Slack(slack-webhook)으로 알림
+    notifications.argoproj.io/subscribe.on-sync-failed.slack-webhook: ""
+    notifications.argoproj.io/subscribe.on-health-degraded.slack-webhook: ""
+  # Application을 지우면 Ingress도 같이 지운다. Ingress가 지워져야 LB Controller가 ALB를 지운다 (남으면 비용)
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/osi7layers/gitops.git
+    targetRevision: main
+    path: apps/alb-ingress/overlays/aws-main
+  destination:
+    name: osi7-aws
+    namespace: ingress-apisix
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
