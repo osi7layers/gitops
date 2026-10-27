@@ -23,4 +23,11 @@ configMapGenerator:
       - KEYCLOAK_JWK_SET_URI=https://keycloak.osi7.shop/realms/ecommerce/protocol/openid-connect/certs
       - KEYCLOAK_ISSUER_URI=https://keycloak.osi7.shop/realms/ecommerce
       - JWT_ISSUER_URI=https://keycloak.osi7.shop/realms/ecommerce
-      
+      # DB 커넥션 유지 (aws-main 전용 · 2026-10-27)
+      #  AWS 앱은 NAT Gateway → 인터넷 → edge-proxy 를 거쳐 온프렘 DB 에 붙는다.
+      #  NAT Gateway 는 350초 동안 데이터가 없는 연결을 끊음 → 쉬던 커넥션이 죽어 HikariPool "Failed to validate connection" 경고
+      #  keepalive 60초: 쉬는 커넥션에 60초마다 신호를 보내 NAT 가 끊지 않게 함
+      #  max-lifetime 300초: 커넥션을 5분마다 새로 만듦 (NAT 제한 350초보다 짧게)
+      #  백엔드 4개(auth·order·product·promotion)가 envFrom 으로 받음. 온프렘은 NAT 를 안 거쳐서 기본값 그대로
+      - SPRING_DATASOURCE_HIKARI_KEEPALIVETIME=60000
+      - SPRING_DATASOURCE_HIKARI_MAXLIFETIME=300000
