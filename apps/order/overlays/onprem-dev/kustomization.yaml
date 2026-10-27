@@ -10,3 +10,5 @@ images:
   - name: ecommerce/order
     newName: harbor.osi7.shop/ecommerce/order   # 팀 gitops 값
     newTag: "52cf7f7"
+patches:
+  - path: otel-tracing-patch.json
