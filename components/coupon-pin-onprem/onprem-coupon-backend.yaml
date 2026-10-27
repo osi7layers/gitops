@@ -26,6 +26,7 @@ ports:
 endpoints:
   - addresses:
       - "132.145.89.131"        # 온프렘 edge-proxy 공인 IP (2번 확인 · 바뀌면 여기만 수정)
+    conditions: {} # API 서버가 기본값으로 채움, 없으면 Argo CD가 OutOfSync로 봄
 ---
 # APISIX → 온프렘은 HTTPS, Host 는 api.osi7.shop (온프렘 기존 HTTPRoute·인증서와 맞춤)
 apiVersion: apisix.apache.org/v1alpha1
