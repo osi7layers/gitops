@@ -1,0 +1,98 @@
+{
+    "spec": {
+        "template": {
+            "spec": {
+                "volumes": [
+                    {
+                        "name": "otel-agent",
+                        "emptyDir": {}
+                    }
+                ],
+                "initContainers": [
+                    {
+                        "name": "download-otel-agent",
+                        "image": "curlimages/curl:8.18.0",
+                        "command": [
+                            "curl"
+                        ],
+                        "args": [
+                            "-fL",
+                            "--retry",
+                            "3",
+                            "https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v2.21.0/opentelemetry-javaagent.jar",
+                            "-o",
+                            "/otel/opentelemetry-javaagent.jar"
+                        ],
+                        "volumeMounts": [
+                            {
+                                "name": "otel-agent",
+                                "mountPath": "/otel"
+                            }
+                        ],
+                        "resources": {
+                            "requests": {
+                                "cpu": "10m",
+                                "memory": "32Mi"
+                            },
+                            "limits": {
+                                "cpu": "100m",
+                                "memory": "64Mi"
+                            }
+                        }
+                    }
+                ],
+                "containers": [
+                    {
+                        "name": "app",
+                        "volumeMounts": [
+                            {
+                                "name": "otel-agent",
+                                "mountPath": "/otel",
+                                "readOnly": true
+                            }
+                        ],
+                        "env": [
+                            {
+                                "name": "JAVA_TOOL_OPTIONS",
+                                "value": "-Xmx200m -Xms100m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -javaagent:/otel/opentelemetry-javaagent.jar"
+                            },
+                            {
+                                "name": "OTEL_SERVICE_NAME",
+                                "value": "order-service"
+                            },
+                            {
+                                "name": "OTEL_RESOURCE_ATTRIBUTES",
+                                "value": "service.namespace=ecommerce-main,deployment.environment.name=onprem-main"
+                            },
+                            {
+                                "name": "OTEL_EXPORTER_OTLP_ENDPOINT",
+                                "value": "http://otel-collector.monitoring.svc.cluster.local:4318"
+                            },
+                            {
+                                "name": "OTEL_EXPORTER_OTLP_PROTOCOL",
+                                "value": "http/protobuf"
+                            },
+                            {
+                                "name": "OTEL_TRACES_EXPORTER",
+                                "value": "otlp"
+                            },
+                            {
+                                "name": "OTEL_METRICS_EXPORTER",
+                                "value": "none"
+                            },
+                            {
+                                "name": "OTEL_LOGS_EXPORTER",
+                                "value": "none"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    },
+    "apiVersion": "apps/v1",
+    "kind": "Deployment",
+    "metadata": {
+        "name": "order-service"
+    }
+}
