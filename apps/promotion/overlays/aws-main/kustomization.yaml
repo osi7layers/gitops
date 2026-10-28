@@ -9,3 +9,11 @@ images:
   - name: ecommerce/promotion
     newName: 918633123181.dkr.ecr.ap-northeast-2.amazonaws.com/ecommerce/promotion   # 팀 gitops 값
     newTag: "52cf7f7"
+# EKS는 노드 IAM 역할로 ECR에서 이미지를 받으므로 base의 harbor-pull Secret을 쓰지 않는다
+patches:
+  - target:
+      kind: Deployment
+      name: promotion-service
+    patch: |-
+      - op: remove
+        path: /spec/template/spec/imagePullSecrets

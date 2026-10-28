@@ -34,3 +34,10 @@ patches:
                     value: "https://shop.osi7.shop/auth/callback"
                   - name: SSO_ALLOWED_REDIRECT_URIS
                     value: "https://shop.osi7.shop/auth/callback"
+  # EKS는 노드 IAM 역할로 ECR에서 이미지를 받으므로 base의 harbor-pull Secret을 쓰지 않는다
+  - target:
+      kind: Deployment
+      name: auth-service
+    patch: |-
+      - op: remove
+        path: /spec/template/spec/imagePullSecrets
