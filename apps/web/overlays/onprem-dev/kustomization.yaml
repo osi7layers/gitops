@@ -9,4 +9,4 @@ resources:
 images:
   - name: ecommerce/web
     newName: harbor.osi7.shop/ecommerce/web   # 팀 gitops 값
-    newTag: "e20a9dd"
+    newTag: "853ab5e"
