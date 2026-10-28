@@ -1,6 +1,0 @@
-# redis-cache / onprem-dev
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-namespace: ecommerce-dev
-resources:
-  - ../../base
