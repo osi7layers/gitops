@@ -8,6 +8,6 @@ resources:
 images:
   - name: ecommerce/product
     newName: 918633123181.dkr.ecr.ap-northeast-2.amazonaws.com/ecommerce/product   # 팀 gitops 값
-    newTag: "4aaccf9"
+    newTag: "b4a1660"
 patches:
   - path: patch-hpa.yaml
