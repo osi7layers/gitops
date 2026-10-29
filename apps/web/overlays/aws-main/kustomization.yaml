@@ -5,6 +5,7 @@ kind: Kustomization
 namespace: ecommerce-main
 resources:
   - ../../base
+  - hpa.yaml
 images:
   - name: ecommerce/web
     newName: 918633123181.dkr.ecr.ap-northeast-2.amazonaws.com/ecommerce/web   # 팀 gitops 값
@@ -17,3 +18,24 @@ patches:
     patch: |-
       - op: remove
         path: /spec/template/spec/imagePullSecrets
+  - target:
+      kind: Deployment
+      name: frontend
+    patch: |-
+      - op: remove
+        path: /spec/replicas
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 500m
+      - op: replace
+        path: /spec/template/spec/containers/0/startupProbe/httpGet/path
+        value: /api/health
+      - op: replace
+        path: /spec/template/spec/containers/0/readinessProbe/httpGet/path
+        value: /api/health
+      - op: add
+        path: /spec/template/spec/containers/0/readinessProbe/timeoutSeconds
+        value: 5
+      - op: add
+        path: /spec/template/spec/containers/0/readinessProbe/failureThreshold
+        value: 6
