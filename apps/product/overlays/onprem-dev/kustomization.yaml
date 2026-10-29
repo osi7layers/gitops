@@ -46,3 +46,15 @@ patches:
                 - name: canary-hash
                   valueFrom:
                     podTemplateHashValue: Latest
+  # HPA 최소 3 · 최대 6 (10/29) : 평상시 요청 1위(57.6%) → 노드마다 1개, 바쁘면 노드당 2개
+  #  HPA 만 바꿔서 Pod 재시작·카나리 없음. CPU request 는 측정값이 없어 스트레스 테스트 후 결정
+  - target:
+      kind: HorizontalPodAutoscaler
+      name: product-service
+    patch: |-
+      - op: replace
+        path: /spec/minReplicas
+        value: 3
+      - op: replace
+        path: /spec/maxReplicas
+        value: 6

@@ -10,3 +10,20 @@ images:
   - name: ecommerce/promotion
     newName: harbor.osi7.shop/ecommerce/promotion   # 팀 gitops 값
     newTag: "b0da3d6"
+# 자원 (10/29, 10/28 부하 테스트 실측 기준 · dev 먼저). 개수는 그대로 (평소 2개, KEDA 13:55 미리 4개)
+#  CPU request 250m : 부하 때 Pod당 160~220m
+#  메모리 768Mi : 부하 때 456Mi = 512Mi 의 89% (기준 70% 초과), 비동기 저장 워커도 Pod 안에서 돎
+patches:
+  - target:
+      kind: Deployment
+      name: promotion-service
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 250m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 768Mi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: 768Mi
