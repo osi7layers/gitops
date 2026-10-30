@@ -10,15 +10,19 @@ images:
   - name: ecommerce/promotion
     newName: harbor.osi7.shop/ecommerce/promotion   # 팀 gitops 값
     newTag: "b0da3d6"
-# 자원 (10/29, 10/28 부하 테스트 실측 기준 · dev 먼저). 개수는 그대로 (평소 2개, KEDA 15:05~15:45 미리 4개)
+# 자원 (10/29, 10/28 부하 테스트 실측 기준 · dev 먼저). 개수는 그대로 (평소 2개, KEDA 15:40~16:30 미리 4개)
 #  CPU request 250m : 부하 때 Pod당 160~220m
 #  메모리 768Mi : 부하 때 456Mi = 512Mi 의 89% (기준 70% 초과), 비동기 저장 워커도 Pod 안에서 돎
 # (10/30 5,000명 스파이크 실측) CPU 가 상한 1000m 에 1분 넘게 붙음 → liveness 3초 응답 실패 3번
 #  → 2개가 12:34:11 동시에 재시작(Exit 137), 약 35초 동안 promotion 0개. 메모리는 510Mi 로 정상
 #  CPU limit 2000m : 몰릴 때 더 쓸 수 있게 (request 는 그대로라 노드 자리 계산은 안 바뀜)
 #  liveness 대기 5초, 6번 실패(약 60초) : 바쁜 것을 멈춘 것으로 보고 죽이지 않게. 진짜 멈춤은 그대로 잡음
-# KEDA 시간 (10/30 스파이크 재테스트) : dev 만 15:05~15:45 로 교체 (base 의 13:55~14:30 대신, main·AWS 는 base 그대로)
+# KEDA 시간 (10/30 스파이크 재테스트) : dev 만 15:40~16:30 로 교체 (Redis 있음/없음 비교 테스트 2번 포함) (base 의 13:55~14:30 대신, main·AWS 는 base 그대로)
 #  테스트 끝나면 이 시간 정리 PR 따로
+# (10/30 15:19 스파이크 재테스트) 공통 설정 JAVA_TOOL_OPTIONS 의 -Xmx200m 때문에 힙이 200MB 로 묶임 (768Mi 여도 Java 는 200MB 만 씀)
+#  → 힙 가득 → GC 만 돌며 CPU 1코어 고정 → readiness 실패(0/1) → liveness 실패로 KEDA 로 뜬 2개 재시작 (12:33 로그 Java heap space 와 같은 원인)
+#  promotion dev 만 힙 512MB 로 덮어씀 (Pod env 가 공통 설정보다 우선, 다른 서비스는 그대로 200MB)
+#  메모리 1Gi : 힙 512 + 힙 밖 약 300Mi (실측 Pod 480Mi - 힙 200) = 약 810Mi
 patches:
   - target:
       kind: Deployment
@@ -29,10 +33,10 @@ patches:
         value: 250m
       - op: replace
         path: /spec/template/spec/containers/0/resources/requests/memory
-        value: 768Mi
+        value: 1Gi
       - op: replace
         path: /spec/template/spec/containers/0/resources/limits/memory
-        value: 768Mi
+        value: 1Gi
       - op: replace
         path: /spec/template/spec/containers/0/resources/limits/cpu
         value: 2000m
@@ -42,13 +46,16 @@ patches:
       - op: replace
         path: /spec/template/spec/containers/0/livenessProbe/failureThreshold
         value: 6
+      - op: add
+        path: /spec/template/spec/containers/0/env/-
+        value: { name: JAVA_TOOL_OPTIONS, value: "-Xmx512m -Xms256m -XX:+UseContainerSupport" }
   - target:
       kind: ScaledObject
       name: promotion-service
     patch: |-
       - op: replace
         path: /spec/triggers/0/metadata/start
-        value: "5 15 * * *"
+        value: "40 15 * * *"
       - op: replace
         path: /spec/triggers/0/metadata/end
-        value: "45 15 * * *"
+        value: "30 16 * * *"
