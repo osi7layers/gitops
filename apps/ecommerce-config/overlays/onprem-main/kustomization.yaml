@@ -16,3 +16,4 @@ configMapGenerator:
       - KEYCLOAK_PUBLIC_SERVER_URL=https://keycloak.osi7.shop
       - KEYCLOAK_ISSUER_URI=https://keycloak.osi7.shop/realms/ecommerce
       - JWT_ISSUER_URI=https://keycloak.osi7.shop/realms/ecommerce   # 운영 Keycloak 의 KC_HOSTNAME 과 같아야 함
+      - PROMOTION_ISSUE_STORE=redis-async
