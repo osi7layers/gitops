@@ -9,7 +9,7 @@ resources:
 images:
   - name: ecommerce/web
     newName: 918633123181.dkr.ecr.ap-northeast-2.amazonaws.com/ecommerce/web   # 팀 gitops 값
-    newTag: "e20a9dd"
+    newTag: "853ab5e"
 # EKS는 노드 IAM 역할로 ECR에서 이미지를 받으므로 base의 harbor-pull Secret을 쓰지 않는다
 patches:
   - target:
