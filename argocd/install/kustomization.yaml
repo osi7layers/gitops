@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# 모든 리소스를 argocd 네임스페이스에 설치한다
+namespace: argocd
+
+resources:
+  # 공식 HA 매니페스트. 버전을 올릴 때는 v3.5.5 부분만 바꾼다
+  - https://raw.githubusercontent.com/argoproj/argo-cd/v3.5.5/manifests/ha/install.yaml
+
+patches:
+  # Helm 사용, osi7-aws EndpointSlice 관리
+  - path: argocd-cm.yaml
+  # Slack #deploy 알림 (sync 실패, Degraded)
+  - path: argocd-notifications-cm.yaml
+  # EKS(osi7-aws) 접속용 AWS 자격 증명 연결
+  - path: application-controller-aws-env.yaml
+  - path: server-aws-env.yaml
