@@ -13,6 +13,10 @@ images:
 # 자원 (10/29, 10/28 부하 테스트 실측 기준 · dev 먼저). 개수는 그대로 (평소 2개, KEDA 13:55 미리 4개)
 #  CPU request 250m : 부하 때 Pod당 160~220m
 #  메모리 768Mi : 부하 때 456Mi = 512Mi 의 89% (기준 70% 초과), 비동기 저장 워커도 Pod 안에서 돎
+# (10/30 5,000명 스파이크 실측) CPU 가 상한 1000m 에 1분 넘게 붙음 → liveness 3초 응답 실패 3번
+#  → 2개가 12:34:11 동시에 재시작(Exit 137), 약 35초 동안 promotion 0개. 메모리는 510Mi 로 정상
+#  CPU limit 2000m : 몰릴 때 더 쓸 수 있게 (request 는 그대로라 노드 자리 계산은 안 바뀜)
+#  liveness 대기 5초, 6번 실패(약 60초) : 바쁜 것을 멈춘 것으로 보고 죽이지 않게. 진짜 멈춤은 그대로 잡음
 patches:
   - target:
       kind: Deployment
@@ -27,3 +31,12 @@ patches:
       - op: replace
         path: /spec/template/spec/containers/0/resources/limits/memory
         value: 768Mi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: 2000m
+      - op: replace
+        path: /spec/template/spec/containers/0/livenessProbe/timeoutSeconds
+        value: 5
+      - op: replace
+        path: /spec/template/spec/containers/0/livenessProbe/failureThreshold
+        value: 6
