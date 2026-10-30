@@ -9,3 +9,35 @@ images:
   - name: ecommerce/promotion
     newName: harbor.osi7.shop/ecommerce/promotion   # 팀 gitops 값
     newTag: "b0da3d6"
+# 자원 (dev 10/30 스파이크 테스트로 확정한 값과 같게). 개수는 그대로 (평소 2개, KEDA 시간대 4개)
+#  CPU request 250m / limit 2000m : 몰릴 때 1000m 상한에 막혀 liveness 실패 → 상한만 올림 (request 그대로라 노드 자리 계산 같음)
+#  liveness 대기 5초, 6번 실패(약 60초) : 바쁜 것을 멈춘 것으로 보고 죽이지 않게
+#  힙 512MB : 공통 설정 -Xmx200m 이면 몰릴 때 힙 가득 → GC 로 CPU 고정 → 재시작 (Pod env 가 공통 설정보다 우선)
+#  메모리 1Gi : 힙 512 + 힙 밖 약 300Mi
+#  dev 10/30 15:50 (Redis 비동기, 5,000명 동시): 4개, 재시작 0, Pod 최대 CPU 621m, 메모리 최대 696Mi
+patches:
+  - target:
+      kind: Deployment
+      name: promotion-service
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 250m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 1Gi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: 1Gi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: 2000m
+      - op: replace
+        path: /spec/template/spec/containers/0/livenessProbe/timeoutSeconds
+        value: 5
+      - op: replace
+        path: /spec/template/spec/containers/0/livenessProbe/failureThreshold
+        value: 6
+      - op: add
+        path: /spec/template/spec/containers/0/env/-
+        value: { name: JAVA_TOOL_OPTIONS, value: "-Xmx512m -Xms256m -XX:+UseContainerSupport" }

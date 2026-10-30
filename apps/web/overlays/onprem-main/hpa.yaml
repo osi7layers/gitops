@@ -1,0 +1,20 @@
+# web / onprem-main HPA (dev 와 같게) : 평상시·쿠폰 모두 요청 상위권(40.5% / 39%) → 노드마다 1개(3), 바쁘면 노드당 2개(6)
+#  CPU request 250m 기준 70% = 175m 에서 늘어남 (10/28 부하 때 Pod당 460~490m)
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: frontend
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: frontend
+  minReplicas: 3
+  maxReplicas: 6
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
