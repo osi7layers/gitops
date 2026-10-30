@@ -1,0 +1,23 @@
+# server(UI, API)도 클러스터 정보를 보여 줄 때 EKS에 접속하므로 controller와 같은 자격 증명을 연결한다.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: argocd-server
+spec:
+  template:
+    spec:
+      containers:
+        - name: argocd-server
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: argocd-aws-creds
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: argocd-aws-creds
+                  key: AWS_SECRET_ACCESS_KEY
+            - name: AWS_REGION
+              value: ap-northeast-2

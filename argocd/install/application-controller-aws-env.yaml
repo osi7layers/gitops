@@ -1,0 +1,24 @@
+# controller가 EKS(osi7-aws)에 IAM 사용자 osi7-argocd로 접속할 때 쓰는 자격 증명.
+# 키 값은 git에 없고 Secret argocd-aws-creds에서 읽는다 (Secret은 cp-01에서 손으로 만든다).
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: argocd-application-controller
+spec:
+  template:
+    spec:
+      containers:
+        - name: argocd-application-controller
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: argocd-aws-creds
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: argocd-aws-creds
+                  key: AWS_SECRET_ACCESS_KEY
+            - name: AWS_REGION
+              value: ap-northeast-2
