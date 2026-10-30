@@ -5,7 +5,28 @@ kind: Kustomization
 namespace: ecommerce-main
 resources:
   - ../../base
+  - hpa.yaml   # web HPA 3~6 (dev 10/29 와 같게)
 images:
   - name: ecommerce/web
     newName: harbor.osi7.shop/ecommerce/web   # 팀 gitops 값
     newTag: "853ab5e"
+# 자원·확인 경로 (dev 10/29 값과 같게, 10/28 부하 테스트 실측 기준)
+#  replicas 삭제 : HPA 가 개수를 정함 (Argo CD 와 충돌 방지)
+#  CPU request 250m : 부하 때 Pod당 460~490m, 평소 3m → 100m 이면 70m 에서 너무 일찍 늘어남
+#  /api/health : '/' 는 화면 전체를 그려 무거움 → 가벼운 확인 전용 경로 (aws-main #45 와 같게)
+patches:
+  - target:
+      kind: Deployment
+      name: frontend
+    patch: |-
+      - op: remove
+        path: /spec/replicas
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 250m
+      - op: replace
+        path: /spec/template/spec/containers/0/startupProbe/httpGet/path
+        value: /api/health
+      - op: replace
+        path: /spec/template/spec/containers/0/readinessProbe/httpGet/path
+        value: /api/health
