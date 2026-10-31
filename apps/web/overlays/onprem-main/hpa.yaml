@@ -10,7 +10,7 @@ spec:
     kind: Deployment
     name: frontend
   minReplicas: 3
-  maxReplicas: 6
+  maxReplicas: 3   # [임시 10/31] HPA 없을 때(3개 고정) 스트레스 비교용. 테스트 후 6 으로 되돌림
   metrics:
     - type: Resource
       resource:
