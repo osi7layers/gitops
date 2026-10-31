@@ -41,16 +41,3 @@ patches:
       - op: add
         path: /spec/template/spec/containers/0/env/-
         value: { name: JAVA_TOOL_OPTIONS, value: "-Xmx512m -Xms256m -XX:+UseContainerSupport" }
-# KEDA 시간 (10/31 main 스파이크 테스트) : onprem-main 만 22:00~23:59 로 교체 (base 의 13:55~14:30 대신, AWS 는 base 그대로)
-#  16:00~18:00 에서 변경 (AWS 경유 스파이크 시간). 쿠폰 발급은 온프렘 고정이라 온프렘만 미리 확장
-#  테스트 끝나면 이 시간 정리 PR 따로
-  - target:
-      kind: ScaledObject
-      name: promotion-service
-    patch: |-
-      - op: replace
-        path: /spec/triggers/0/metadata/start
-        value: "0 22 * * *"
-      - op: replace
-        path: /spec/triggers/0/metadata/end
-        value: "59 23 * * *"
