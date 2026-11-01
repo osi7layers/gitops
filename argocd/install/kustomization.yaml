@@ -16,3 +16,10 @@ patches:
   # EKS(osi7-aws) 접속용 AWS 자격 증명 연결
   - path: application-controller-aws-env.yaml
   - path: server-aws-env.yaml
+  # Argo CD Redis 감시(sentinel) CPU 상한 (10/31 wk-03 CPU 독점 재발 방지)
+  - path: redis-ha-sentinel-resources.yaml
+    target:
+      group: apps
+      version: v1
+      kind: StatefulSet
+      name: argocd-redis-ha-server
