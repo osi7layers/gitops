@@ -1,0 +1,14 @@
+# 10/31 테스트 중 Argo CD Redis 감시(sentinel) 하나가 오류 로그 없이 CPU 1코어를 계속 써서 같은 노드(wk-03)의 앱이 느려졌다.
+# 원인을 몰라 재발을 막을 수 없으므로, 다시 생겨도 노드 CPU를 독점하지 못하게 sentinel에 상한을 둔다. 평소 사용량은 10m 안팎 (2026-11-01 확인)
+# 컨테이너 순서(redis, sentinel, split-brain-fix)를 바꾸지 않도록 위치를 지정해 추가한다.
+# 2번째 컨테이너(index 1)가 sentinel인지 먼저 확인하고, 아니면(공식 매니페스트 순서가 바뀌면) 빌드를 실패시킨다.
+- op: test
+  path: /spec/template/spec/containers/1/name
+  value: sentinel
+- op: add
+  path: /spec/template/spec/containers/1/resources
+  value:
+    requests:
+      cpu: 10m
+    limits:
+      cpu: 200m
