@@ -1,0 +1,26 @@
+# components/spread-honor : 분산 계산에서 Pod가 견디지 못하는 taint가 붙은 노드를 뺀다 (9-1 #1 1단계)
+#  왜: drain(cordon)·NotReady 노드에 붙는 taint를 무시하면, 그 노드까지 세어 남은 노드 배치가 어긋날 수 있다
+#  ScheduleAnyway 는 그대로라 배치를 막지는 않는다. DoNotSchedule 은 워커 추가 뒤 재검토
+#  차트 topologySpreadConstraints 첫 항목이 hostname 기준인지 먼저 확인(test) → 아니면 빌드 실패로 알려 줌
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+patches:
+  - target:
+      kind: Deployment
+    patch: |-
+      - op: test
+        path: /spec/template/spec/topologySpreadConstraints/0/topologyKey
+        value: kubernetes.io/hostname
+      - op: add
+        path: /spec/template/spec/topologySpreadConstraints/0/nodeTaintsPolicy
+        value: Honor
+  - target:
+      group: argoproj.io
+      kind: Rollout
+    patch: |-
+      - op: test
+        path: /spec/template/spec/topologySpreadConstraints/0/topologyKey
+        value: kubernetes.io/hostname
+      - op: add
+        path: /spec/template/spec/topologySpreadConstraints/0/nodeTaintsPolicy
+        value: Honor

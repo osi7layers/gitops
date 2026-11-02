@@ -12,3 +12,7 @@ images:
     newTag: "52cf7f7"
 patches:
   - path: otel-tracing-patch.json
+
+# 분산 계산에서 taint 노드 제외 (dev 먼저)
+components:
+  - ../../../../components/spread-honor
