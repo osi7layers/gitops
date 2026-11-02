@@ -31,3 +31,7 @@ patches:
       - op: replace
         path: /spec/template/spec/containers/0/readinessProbe/httpGet/path
         value: /api/health
+
+# 분산 계산에서 taint 노드 제외 (dev 먼저)
+components:
+  - ../../../../components/spread-honor

@@ -47,3 +47,7 @@ patches:
       - op: add
         path: /spec/template/spec/containers/0/env/-
         value: { name: JAVA_TOOL_OPTIONS, value: "-Xmx512m -Xms256m -XX:+UseContainerSupport" }
+
+# 분산 계산에서 taint 노드 제외 (dev 먼저)
+components:
+  - ../../../../components/spread-honor

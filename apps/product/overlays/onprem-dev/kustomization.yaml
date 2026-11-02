@@ -58,3 +58,7 @@ patches:
       - op: replace
         path: /spec/maxReplicas
         value: 6
+
+# 분산 계산에서 taint 노드 제외 (dev 먼저)
+components:
+  - ../../../../components/spread-honor

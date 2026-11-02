@@ -35,3 +35,7 @@ patches:
                     value: "https://shop.dev.osi7.shop/auth/callback"
                   - name: SSO_ALLOWED_REDIRECT_URIS
                     value: "https://shop.dev.osi7.shop/auth/callback"
+
+# 분산 계산에서 taint 노드 제외 (dev 먼저)
+components:
+  - ../../../../components/spread-honor
