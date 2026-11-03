@@ -9,7 +9,7 @@ resources:
 images:
   - name: ecommerce/promotion
     newName: harbor.osi7.shop/ecommerce/promotion   # 팀 gitops 값
-    newTag: "b0da3d6"
+    newTag: "26dfc75"
 # 자원 (10/29, 10/28 부하 테스트 실측 기준 · dev 먼저). 개수는 그대로 (평소 2개, 쿠폰 시간 KEDA 미리 4개 = base 13:55~14:30)
 #  CPU request 250m : 부하 때 Pod당 160~220m
 #  메모리 768Mi : 부하 때 456Mi = 512Mi 의 89% (기준 70% 초과), 비동기 저장 워커도 Pod 안에서 돎

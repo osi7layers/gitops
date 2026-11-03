@@ -9,7 +9,7 @@ resources:
 images:
   - name: ecommerce/order
     newName: harbor.osi7.shop/ecommerce/order   # 팀 gitops 값
-    newTag: "52cf7f7"
+    newTag: "26dfc75"
 patches:
   - path: otel-tracing-patch.json
   - path: memory-patch.yaml   # 메모리 768Mi (11/03)
