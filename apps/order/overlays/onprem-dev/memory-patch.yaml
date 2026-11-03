@@ -1,0 +1,18 @@
+# order / onprem-dev : 메모리 요청·상한 512Mi → 768Mi (11/03 auth·order 부하 테스트 근거)
+#  heap 은 최고 112MB / 200MB 로 여유. 메모리는 heap 밖(Java 기본 + otel 에이전트 #38) 때문에 최고 443Mi / 512Mi (86%)
+#  11/02 main 에서 확인 명령 하나로 OOMKilled 된 적 있음 → 여유 약 70Mi 를 약 320Mi 로 늘림
+#  요청=상한을 같이 올려 노드 자리 계산과 실제 상한을 맞춤 (CPU 값은 그대로)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-service
+spec:
+  template:
+    spec:
+      containers:
+        - name: app
+          resources:
+            requests:
+              memory: 768Mi
+            limits:
+              memory: 768Mi
