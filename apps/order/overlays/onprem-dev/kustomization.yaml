@@ -12,6 +12,7 @@ images:
     newTag: "52cf7f7"
 patches:
   - path: otel-tracing-patch.json
+  - path: memory-patch.yaml   # 메모리 768Mi (11/03)
 
 # 분산 계산에서 taint 노드 제외 (dev 먼저)
 components:
