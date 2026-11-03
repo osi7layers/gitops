@@ -45,3 +45,13 @@ patches:
       - op: replace
         path: /spec/hostnames/0
         value: keycloak.osi7.shop
+  # auth 사용자 IP 고정 해제 (11/03, dev #67 확인 뒤): 로그인 중간값은 앱 #45(10/21)부터 DB(sso_handshake)에 저장 → 고정 불필요.
+  #  온프렘은 APISIX가 XFF를 믿지 않아(trusted_addresses 127.0.0.1) 전원이 edge-proxy IP 하나로 해시돼 auth 1개에 몰렸음.
+  - target:
+      group: apisix.apache.org
+      version: v1alpha1
+      kind: BackendTrafficPolicy
+      name: auth-service-timeout
+    patch: |-
+      - op: remove
+        path: /spec/loadbalancer
