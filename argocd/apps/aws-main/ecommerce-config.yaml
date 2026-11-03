@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ecommerce-config-aws-main
+  namespace: argocd                  # Application 자체는 argocd 네임스페이스에 둔다
+  annotations:
+    # sync 실패, Degraded일 때 Slack(slack-webhook)으로 알림
+    notifications.argoproj.io/subscribe.on-sync-failed.slack-webhook: ""
+    notifications.argoproj.io/subscribe.on-health-degraded.slack-webhook: ""
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/osi7layers/gitops.git
+    targetRevision: main
+    path: apps/ecommerce-config/overlays/aws-main
+  destination:
+    name: osi7-aws
+    namespace: ecommerce-main
+  syncPolicy:
+    automated:
+      prune: true      # gitops에서 지운 건 클러스터에서도 지움
+      selfHeal: true   # 누가 손으로 바꾸면 gitops 상태로 되돌림
